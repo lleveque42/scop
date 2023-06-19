@@ -1,9 +1,24 @@
-#include "../includes/scop.hpp"
+#include "scop.hpp"
 
-int main(int ac, char **av)
-{
-	if (check_arg(ac, av))
+int main(int ac, char **av) {
+	std::string modelPath;
+	Model *model;
+
+	try {
+		utils::checkArg(ac, av);
+		modelPath = av[1];
+	}
+	catch (std::exception &e) {
+		std::cerr << ERR_INVALID_ARG << e.what() << std::endl << ERR_USING_DEFAULT << std::endl;
+		modelPath = DEFAULT_MODEL_PATH;
+	}
+	try {
+		model = new Model(modelPath);
+		model->load();
+	} catch (std::exception &e) {
+		std::cerr << ERR << e.what() << std::endl;
 		return 1;
+	}
 	// GLFWwindow *window;
 
 	// if (!glfwInit())
@@ -22,5 +37,6 @@ int main(int ac, char **av)
 	// 	glfwPollEvents();
 	// }
 	// glfwTerminate();
+	delete model;
 	return 0;
 }

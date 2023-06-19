@@ -7,10 +7,14 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#define WRONG_ARGS_NB "Error: wrong numbers of arguments, you must give a .obj file."
-#define WRONG_ARG_TYPE "Error: argument must be a .obj file."
-#define INVALID_FILE(file_name) ("Error: " + std::string(file_name) + " not found.")
+#include "classes/Model.hpp"
+#include "utils.hpp"
 
-using namespace std;
+#define DEFAULT_MODEL_PATH "./resources/42.obj"
 
-int check_arg(int ac, char **av);
+#define ERR_INVALID_ARG "Error: invalid argument: "
+#define ERR "Error: "
+#define ERR_WRONG_ARGS_NB "you must provide a .obj file."
+#define ERR_WRONG_ARG_TYPE "must be a .obj file."
+#define ERR_FILE_NOT_FOUND(filePath) (std::string(filePath) + " not found.")
+#define ERR_USING_DEFAULT "Using default model."
