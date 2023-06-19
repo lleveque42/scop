@@ -33,24 +33,36 @@ void Model::load() {
 			splittedLine = utils::split(line);
 			if (_isVector3Valid(splittedLine))
 				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
-			std::cout << "v " << splittedLine[1] << " " << splittedLine[2] << " " <<  splittedLine[3] <<  std::endl;
+			_vs.push_back(Vector3(std::stof(splittedLine[1]), std::stof(splittedLine[2]), std::stof(splittedLine[3])));
+			// std::cout << "v " << splittedLine[1] << " " << splittedLine[2] << " " <<  splittedLine[3] <<  std::endl;
 		}
 		else if (utils::startsWith(line, TEXTURE_PREFIX)) {
 			splittedLine = utils::split(line);
 			if (_isVector2Valid(splittedLine))
 				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
-			std::cout << "vt " << splittedLine[1] << " " << splittedLine[2]<<  std::endl;
+			_vts.push_back(Vector2(std::stof(splittedLine[1]), std::stof(splittedLine[2])));
+			// std::cout << "vt " << splittedLine[1] << " " << splittedLine[2]<<  std::endl;
 		}
 		else if (utils::startsWith(line, NORMAL_PREFIX)) {
 			splittedLine = utils::split(line);
 			if (_isVector3Valid(splittedLine))
 				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
-			std::cout << "vn " << splittedLine[1] << " " << splittedLine[2] << " " <<  splittedLine[3] <<  std::endl;
+			_vns.push_back(Vector3(std::stof(splittedLine[1]), std::stof(splittedLine[2]), std::stof(splittedLine[3])));
+			// std::cout << "vn " << splittedLine[1] << " " << splittedLine[2] << " " <<  splittedLine[3] <<  std::endl;
 		}
 		else if (utils::startsWith(line, FACE_PREFIX))
 			std::cout << "Face" << std::endl;
 		i++;
 	}
+	std::cout << "VERTICES" << std::endl;
+	for (unsigned int i = 0; i < _vs.size(); i++)
+		std::cout << _vs[i] << std::endl;
+	std::cout << "TEXTURES" << std::endl;
+	for (unsigned int i = 0; i < _vts.size(); i++)
+		std::cout << _vts[i] << std::endl;
+	std::cout << "NORMALES" << std::endl;
+	for (unsigned int i = 0; i < _vns.size(); i++)
+		std::cout << _vns[i] << std::endl;
 }
 
 bool Model::_isVector3Valid(std::vector<std::string> v) {
