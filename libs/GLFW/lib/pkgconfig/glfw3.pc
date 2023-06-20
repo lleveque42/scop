@@ -1,7 +1,7 @@
-prefix=/home/lleveque/Documents/42/scop/lib/GLFW
+prefix=/home/lleveque/Documents/42/scop/libs/GLFW
 exec_prefix=${prefix}
-includedir=/home/lleveque/Documents/42/scop/lib/GLFW/include
-libdir=/home/lleveque/Documents/42/scop/lib/GLFW/lib
+includedir=/home/lleveque/Documents/42/scop/libs/GLFW/include
+libdir=/home/lleveque/Documents/42/scop/libs/GLFW/lib
 
 Name: GLFW
 Description: A multi-platform library for OpenGL, window and input

@@ -1,17 +1,18 @@
-NAME = scop
+NAME= scop
 
 DIR_SRCS = srcs
 DIR_OBJS = bin
 DIR_GLFW = ./libs/GLFW
+DIR_GLEW = ./libs/GLEW
 
 SRCS = ${shell bash ./scripts/generate_sources.sh}
 OBJS = $(SRCS:%.cpp=$(DIR_OBJS)/%.o)
 
 CXX = g++
 CXXFLAGS = -Wall -Wextra -Werror -pedantic -std=c++11 -MMD
-CXXINCLUDES = -I${DIR_GLFW}/include ${shell bash ./scripts/generate_includes.sh}
+CXXINCLUDES = -I${DIR_GLFW}/include/ -I${DIR_GLEW}/include/ ${shell bash ./scripts/generate_includes.sh}
 
-LDFLAGS = -L$(DIR_GLFW)/lib -lglfw -lGL
+CXXDEPENDENCIES = -L$(DIR_GLFW)/lib -lglfw3 -L${DIR_GLEW}/lib64 -lGLEW -lGL -lX11
 
 MKDIR = mkdir -p
 RM = rm -rf
@@ -19,12 +20,12 @@ RM = rm -rf
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(CXXDEPENDENCIES)
 
 
 $(DIR_OBJS)/%.o : $(DIR_SRCS)/%.cpp
 			${MKDIR} ${dir $@}
-		${CXX} ${CXXFLAGS} ${CXXINCLUDES} -c $< -o $@
+		${CXX} ${CXXFLAGS} -c $< -o $@ ${CXXINCLUDES}
 
 -include $(OBJS:.o=.d)
 
