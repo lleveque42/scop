@@ -1,15 +1,17 @@
 NAME = scop
+
 DIR_SRCS = srcs
 DIR_OBJS = bin
+DIR_GLFW = ./libs/GLFW
 
 SRCS = ${shell bash ./scripts/generate_sources.sh}
 OBJS = $(SRCS:%.cpp=$(DIR_OBJS)/%.o)
 
 CXX = g++
 CXXFLAGS = -Wall -Wextra -Werror -pedantic -std=c++11 -MMD
-CXXINCLUDES = -I/usr/include -I/usr/local/include ${shell bash ./scripts/generate_includes.sh}
+CXXINCLUDES = -I${DIR_GLFW}/include ${shell bash ./scripts/generate_includes.sh}
 
-LDFLAGS = -lglfw -lGLEW -lGL
+LDFLAGS = -L$(DIR_GLFW)/lib -lglfw -lGL
 
 MKDIR = mkdir -p
 RM = rm -rf

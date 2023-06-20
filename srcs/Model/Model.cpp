@@ -34,21 +34,18 @@ void Model::load() {
 			if (_isVector3Valid(splittedLine))
 				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
 			_vs.push_back(Vector3(std::stof(splittedLine[1]), std::stof(splittedLine[2]), std::stof(splittedLine[3])));
-			// std::cout << "v " << splittedLine[1] << " " << splittedLine[2] << " " <<  splittedLine[3] <<  std::endl;
 		}
 		else if (utils::startsWith(line, TEXTURE_PREFIX)) {
 			splittedLine = utils::split(line);
 			if (_isVector2Valid(splittedLine))
 				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
 			_vts.push_back(Vector2(std::stof(splittedLine[1]), std::stof(splittedLine[2])));
-			// std::cout << "vt " << splittedLine[1] << " " << splittedLine[2]<<  std::endl;
 		}
 		else if (utils::startsWith(line, NORMAL_PREFIX)) {
 			splittedLine = utils::split(line);
 			if (_isVector3Valid(splittedLine))
 				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
 			_vns.push_back(Vector3(std::stof(splittedLine[1]), std::stof(splittedLine[2]), std::stof(splittedLine[3])));
-			// std::cout << "vn " << splittedLine[1] << " " << splittedLine[2] << " " <<  splittedLine[3] <<  std::endl;
 		}
 		else if (utils::startsWith(line, FACE_PREFIX))
 			std::cout << "Face" << std::endl;
