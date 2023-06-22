@@ -2,7 +2,8 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
-#define ERR_INIT "Error: failed to initialize GLFW."
+#define ERR_GLFW_INIT "Error: failed to initialize GLFW."
+#define ERR_GLEW_INIT "Error: failed to initialize GLEW."
 #define ERR_CREATE_WIN "Error: could not create window (OpenGL version may be too old)."
 
 #define WIN_WIDTH 640
