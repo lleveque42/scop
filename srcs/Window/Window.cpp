@@ -25,13 +25,12 @@ void Window::initialize() {
 		glfwTerminate();
 		exit(EXIT_FAILURE);
 	}
-	std::cout << glewInit() << std::endl;
+	glfwMakeContextCurrent(_window);
 	if (glewInit() != GLEW_OK) {
 		std::cerr << ERR_GLEW_INIT << std::endl;
 		glfwTerminate();
 		exit(EXIT_FAILURE);
 	}
-	glfwMakeContextCurrent(_window);
 }
 
 void Window::render() {
