@@ -27,29 +27,29 @@ COMPILING := $(CYAN)Compiling$(NC)
 LINKING := $(GREEN)Linking$(NC)
 REMOVING := $(RED)Removing$(NC)
 
-ifeq ($(OS), Linux)
-	all: $(NAME)
+ifeq ($(UNAME), Linux)
+all: $(NAME)
 
-	$(NAME): $(OBJS)
-		@echo "$(LINKING) scop..."
-		@$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(CXXDEPENDENCIES)
+$(NAME): $(OBJS)
+	@echo "$(LINKING) scop..."
+	@$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(CXXDEPENDENCIES)
 
-	$(DIR_OBJS)/%.o : $(DIR_SRCS)/%.cpp
-		@$(MKDIR) $(dir $@)
-		@echo "$(COMPILING) $<..."
-		@$(CXX) $(CXXFLAGS) -c $< -o $@ $(CXXINCLUDES)
+$(DIR_OBJS)/%.o : $(DIR_SRCS)/%.cpp
+	@$(MKDIR) $(dir $@)
+	@echo "$(COMPILING) $<..."
+	@$(CXX) $(CXXFLAGS) -c $< -o $@ $(CXXINCLUDES)
 
-	-include $(OBJS:.o=.d)
+-include $(OBJS:.o=.d)
 
-	clean:
-		@echo "$(REMOVING) objects..."
-		@$(RM) $(OBJS) $(DIR_OBJS)
+clean:
+	@echo "$(REMOVING) objects..."
+	@$(RM) $(OBJS) $(DIR_OBJS)
 
-	fclean: clean
-		@echo "$(REMOVING) executable..."
-		@$(RM) $(NAME)
+fclean: clean
+	@echo "$(REMOVING) executable..."
+	@$(RM) $(NAME)
 
-	re: fclean all
+re: fclean all
 else
 $(error Unsupported os: ${UNAME}, scop only supports Linux)
 endif
