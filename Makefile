@@ -1,39 +1,51 @@
-NAME= scop
+NAME := scop
 
-DIR_SRCS = srcs
-DIR_OBJS = bin
-DIR_GLFW = ./libs/GLFW
-DIR_GLEW = ./libs/GLEW
+DIR_SRCS := srcs
+DIR_OBJS := bin
+DIR_GLFW := ./libs/GLFW
+DIR_GLEW := ./libs/GLEW
 
-SRCS = ${shell bash ./scripts/generate_sources.sh}
-OBJS = $(SRCS:%.cpp=$(DIR_OBJS)/%.o)
+SRCS := ${shell bash ./scripts/generate_sources.sh}
+OBJS := $(SRCS:%.cpp=$(DIR_OBJS)/%.o)
 
-CXX = g++
-CXXFLAGS = -Wall -Wextra -Werror -pedantic -std=c++11 -MMD
-CXXINCLUDES = -I${DIR_GLFW}/include/ -I${DIR_GLEW}/include/ ${shell bash ./scripts/generate_includes.sh}
+CXX := g++
+CXXFLAGS := -Wall -Wextra -Werror -pedantic -std=c++11 -MMD
+CXXINCLUDES := -I${DIR_GLFW}/include/ -I${DIR_GLEW}/include/ ${shell bash ./scripts/generate_includes.sh}
 
-CXXDEPENDENCIES = -L$(DIR_GLFW)/lib -lglfw3 -L${DIR_GLEW} -lGLEW -lGL -lX11
+CXXDEPENDENCIES := -L$(DIR_GLFW)/lib -lglfw3 -L${DIR_GLEW} -lGLEW -lGL -lX11
 
-MKDIR = mkdir -p
-RM = rm -rf
+MKDIR := mkdir -p
+RM := rm -rf
+
+RED := \033[1;31m
+GREEN := \033[1;32m
+CYAN := \033[1;36m
+NC := \033[0;37m
+
+COMPILING := ${CYAN}Compiling${NC}
+LINKING := ${GREEN}Linking${NC}
+REMOVING := ${RED}Removing${NC}
 
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(CXXDEPENDENCIES)
-
+	@echo "${LINKING} scop..."
+	@$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(CXXDEPENDENCIES)
 
 $(DIR_OBJS)/%.o : $(DIR_SRCS)/%.cpp
-			${MKDIR} ${dir $@}
-		${CXX} ${CXXFLAGS} -c $< -o $@ ${CXXINCLUDES}
+	@${MKDIR} ${dir $@}
+	@echo "${COMPILING} $<..."
+	@${CXX} ${CXXFLAGS} -c $< -o $@ ${CXXINCLUDES}
 
 -include $(OBJS:.o=.d)
 
 clean:
-	${RM} ${OBJS}
+	@echo "${REMOVING} objects..."
+	@${RM} ${OBJS} ${DIR_OBJS}
 
 fclean: clean
-	${RM} ${NAME} ${DIR_OBJS}
+	@echo "${REMOVING} executable..."
+	@${RM} ${NAME}
 
 re: fclean all
 
