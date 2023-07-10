@@ -22,6 +22,7 @@ class Model {
 		std::vector<Vector3> _vs;
 		std::vector<Vector2> _vts;
 		std::vector<Vector3> _vns;
+		std::vector<Vector3> _vfs;
 		bool _isVector2Valid(std::vector<std::string> vec2);
 		bool _isVector3Valid(std::vector<std::string> vec3);
 
@@ -30,4 +31,8 @@ class Model {
 		~Model();
 		std::ifstream *getModelFile();
 		void load();
+		// std::vector<Vector3> _vs;
+		// std::vector<Vector2> _vts;
+		// std::vector<Vector3> _vns;
+		// std::vector<Vector3> _vfs;
 };

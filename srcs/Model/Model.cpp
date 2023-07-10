@@ -11,7 +11,6 @@ Model::Model(std::string modelPath) {
 }
 
 Model::~Model() {
-	_modelFile->close();
 	delete _modelFile;
 }
 
@@ -47,8 +46,12 @@ void Model::load() {
 				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
 			_vns.push_back(Vector3(std::stof(splittedLine[1]), std::stof(splittedLine[2]), std::stof(splittedLine[3])));
 		}
-		else if (utils::startsWith(line, FACE_PREFIX))
-			std::cout << "Face" << std::endl;
+		else if (utils::startsWith(line, FACE_PREFIX)) {
+			splittedLine = utils::split(line);
+			if (_isVector3Valid(splittedLine))
+				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
+			_vfs.push_back(Vector3(std::stof(splittedLine[1]), std::stof(splittedLine[2]), std::stof(splittedLine[3])));
+		}
 		i++;
 	}
 	std::cout << "VERTICES" << std::endl;
@@ -60,6 +63,10 @@ void Model::load() {
 	std::cout << "NORMALES" << std::endl;
 	for (unsigned int i = 0; i < _vns.size(); i++)
 		std::cout << _vns[i] << std::endl;
+	std::cout << "FACES" << std::endl;
+	for (unsigned int i = 0; i < _vns.size(); i++)
+		std::cout << _vfs[i] << std::endl;
+	_modelFile->close();
 }
 
 bool Model::_isVector3Valid(std::vector<std::string> v) {
