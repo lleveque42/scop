@@ -7,7 +7,8 @@
 
 #include "Model.hpp"
 #include "utils.hpp"
-#include "Window.hpp"
+#include "Engine.hpp"
+#include "Shaders.hpp"
 
 #define DEFAULT_MODEL_PATH "./resources/42.obj"
 
