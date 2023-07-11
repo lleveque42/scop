@@ -9,8 +9,9 @@
 #define fragmentShaderPath "./shaders/shader.frag"
 
 #define ERR_SHADER_NOT_FOUND(filePath) std::invalid_argument("Shader file " + std::string(filePath) +  " not found.\nExiting...");
-#define ERR_COMPILE_SHADERS(error) ("shaders compilation failed: " + std::string(error))
-#define ERR_LINK_SHADERS(error) ("linking shaders program failed: " + std::string(error))
+#define ERR_READING_SHADERS std::invalid_argument("reading shaders source failed.")
+#define ERR_COMPILE_SHADERS(error) std::invalid_argument("shaders compilation failed: " + std::string(error))
+#define ERR_LINK_SHADERS(error) std::invalid_argument("linking shaders program failed: " + std::string(error))
 
 class Shaders
 {

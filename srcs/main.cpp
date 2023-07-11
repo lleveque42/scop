@@ -1,16 +1,14 @@
 #include "scop.hpp"
 
-void clear(	Model *model, Shaders *shaders,	Engine *engine) {
+void clear(	Model *model, Engine *engine) {
 	if (model) delete model;
-	if (shaders) delete shaders;
 	if (engine) delete engine;
 }
 
 int main(int ac, char **av) {
 	std::string modelPath;
 	Model *model = nullptr;
-	Shaders *shaders = nullptr;
-	Engine *engine = new Engine();
+	Engine *engine = nullptr;
 
 	try {
 		utils::checkArg(ac, av);
@@ -22,18 +20,17 @@ int main(int ac, char **av) {
 	}
 	try {
 		model = new Model(modelPath);
-		shaders = new Shaders();
 		model->load();
-		shaders->load();
+		engine = new Engine();
 		engine->initialize();
 		engine->loadModel(model);
-		shaders->compile();
-		engine->render(shaders);
+		engine->loadShaders();
+		engine->render();
 	} catch (std::exception &e) {
 		std::cerr << ERR << e.what() << std::endl;
-		clear(model, shaders, engine);
+		clear(model, engine);
 		return EXIT_FAILURE;
 	}
-	clear(model, shaders, engine);
+	clear(model, engine);
 	return EXIT_SUCCESS;
 }

@@ -16,8 +16,12 @@ void Shaders::load() {
 		throw ERR_SHADER_NOT_FOUND(vertexShaderPath);
 	if (!fragmentShaderFile.is_open())
 		throw ERR_SHADER_NOT_FOUND(fragmentShaderPath);
-	vertexShaderStream << vertexShaderFile.rdbuf();
-	fragmentShaderStream << fragmentShaderFile.rdbuf();
+	try {
+		vertexShaderStream << vertexShaderFile.rdbuf();
+		fragmentShaderStream << fragmentShaderFile.rdbuf();
+	} catch (std::exception &e) {
+		throw ERR_READING_SHADERS;
+	}
 	vertexShaderFile.close();
 	fragmentShaderFile.close();
 	_vertexShaderSource = vertexShaderStream.str();
@@ -25,10 +29,10 @@ void Shaders::load() {
 }
 
 void Shaders::compile() {
-	int  success;
+	int success = 0;
 	char infoLog[512];
-	GLuint vertexShader;
-	GLuint fragmentShader;
+	GLuint vertexShader = 0;
+	GLuint fragmentShader = 0;
 	const char *vertexShaderSource = _vertexShaderSource.c_str();
 	const char *fragmentShaderSource = _fragmentShaderSource.c_str();
 
@@ -40,7 +44,7 @@ void Shaders::compile() {
 	if(!success) {
 		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
 		glDeleteShader(vertexShader);
-		throw std::invalid_argument(ERR_COMPILE_SHADERS(infoLog));
+		throw ERR_COMPILE_SHADERS(infoLog);
 	}
 
 	// compile fragment shader
@@ -52,7 +56,7 @@ void Shaders::compile() {
 		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
 		glDeleteShader(vertexShader);
 		glDeleteShader(fragmentShader);
-		throw std::invalid_argument(ERR_COMPILE_SHADERS(infoLog));
+		throw ERR_COMPILE_SHADERS(infoLog);
 	}
 
 	// link shaders so they can share outputs/communicate
@@ -60,15 +64,13 @@ void Shaders::compile() {
 	glAttachShader(_shaderProgram, vertexShader);
 	glAttachShader(_shaderProgram, fragmentShader);
 	glLinkProgram(_shaderProgram);
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
 	glGetProgramiv(_shaderProgram, GL_LINK_STATUS, &success);
 	if(!success) {
 		glGetProgramInfoLog(_shaderProgram, 512, NULL, infoLog);
-		glDeleteShader(vertexShader);
-		glDeleteShader(fragmentShader);
-		throw std::invalid_argument(ERR_LINK_SHADERS(infoLog));
+		throw ERR_LINK_SHADERS(infoLog);
 	}
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
 }
 
 void Shaders::use() {

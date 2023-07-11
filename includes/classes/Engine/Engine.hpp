@@ -8,9 +8,9 @@
 #include "Model.hpp"
 #include "Shaders.hpp"
 
-#define ERR_GLFW_INIT "failed to initialize GLFW."
-#define ERR_GLEW_INIT "failed to initialize GLEW."
-#define ERR_CREATE_WIN "could not create window (OpenGL version may be too old)."
+#define ERR_GLFW_INIT std::invalid_argument("failed to initialize GLFW.")
+#define ERR_GLEW_INIT std::invalid_argument("failed to initialize GLEW.")
+#define ERR_CREATE_WIN std::invalid_argument("could not create window (OpenGL version may be too old).")
 
 #define WIN_WIDTH 640
 #define WIN_HEIGHT 480
@@ -22,6 +22,7 @@ class Engine {
 		GLuint _VAO;
 		GLuint _VBO;
 		GLuint _EBO;
+		Shaders *_shaders;
 		// float _vertices[12] = {
 		// 	 0.0f,  0.5f, 0.0f,
 		// 	 0.5f, -0.5f, 0.0f,
@@ -48,6 +49,7 @@ class Engine {
 
 		void initialize();
 		void loadModel(Model *model);
-		void render(Shaders *shaders);
+		void loadShaders();
+		void render();
 };
 

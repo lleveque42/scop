@@ -1,10 +1,11 @@
 #include "Engine.hpp"
 
-Engine::Engine() : _window(nullptr), _VAO(0), _VBO(0), _EBO(0)
+Engine::Engine() : _window(nullptr), _VAO(0), _VBO(0), _EBO(0), _shaders(nullptr)
  //  _vertices(nullptr), _faces(nullptr) //
 {
 	if (!glfwInit())
-		throw std::invalid_argument(ERR_GLFW_INIT);
+		throw ERR_GLFW_INIT;
+	_shaders = new Shaders();
 }
 
 Engine::~Engine() {
@@ -12,6 +13,7 @@ Engine::~Engine() {
 		glfwDestroyWindow(_window);
 	_clearShaders();
 	glfwTerminate();
+	delete _shaders;
 }
 
 void Engine::initialize() {
@@ -22,12 +24,12 @@ void Engine::initialize() {
 	_window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, WIN_TITLE, NULL, NULL);
 	if (!_window) {
 		glfwTerminate();
-		throw std::invalid_argument(ERR_CREATE_WIN);
+		throw ERR_CREATE_WIN;
 	}
 	glfwMakeContextCurrent(_window);
 	if (glewInit() != GLEW_OK) {
 		glfwTerminate();
-		throw std::invalid_argument(ERR_GLEW_INIT);
+		throw ERR_GLEW_INIT;
 	}
 	glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT);
 	glfwSetFramebufferSizeCallback(_window, _framebuffer_size_callback); // dynamic window size
@@ -37,7 +39,12 @@ void Engine::loadModel(Model *model) {
 	(void)model;
 }
 
-void Engine::render(Shaders *shaders) {
+void Engine::loadShaders() {
+	_shaders->load();
+	_shaders->compile();
+}
+
+void Engine::render() {
 	glGenVertexArrays(1, &_VAO);
 	glGenBuffers(1, &_VBO);
 	// glGenBuffers(1, &_EBO);
@@ -62,7 +69,7 @@ void Engine::render(Shaders *shaders) {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		shaders->use();
+		_shaders->use();
 
 		// render model
 		glBindVertexArray(_VAO);
