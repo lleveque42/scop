@@ -5,13 +5,14 @@ DIR_SRCS := srcs
 DIR_OBJS := bin
 DIR_GLFW := ./libs/GLFW
 DIR_GLEW := ./libs/GLEW
+DIR_STB := ./libs/STB
 
 SRCS := $(shell bash ./scripts/generate_sources.sh)
 OBJS := $(SRCS:%.cpp=$(DIR_OBJS)/%.o)
 
 CXX := g++
 CXXFLAGS := -Wall -Wextra -Werror -pedantic -std=c++11 -MMD
-CXXINCLUDES := -I$(DIR_GLFW)/include/ -I$(DIR_GLEW)/include/ $(shell bash ./scripts/generate_includes.sh)
+CXXINCLUDES := -I$(DIR_GLFW)/include/ -I$(DIR_GLEW)/include/ -I$(DIR_STB)/include/ $(shell bash ./scripts/generate_includes.sh)
 
 CXXDEPENDENCIES := -L$(DIR_GLFW)/lib -lglfw3 -L$(DIR_GLEW) -lGLEW -lGL -lX11
 
