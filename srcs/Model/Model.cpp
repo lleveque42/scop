@@ -58,20 +58,20 @@ void Model::load() {
 		}
 		i++;
 	}
-	std::cout << "NAME" << std::endl;
-		std::cout << _modelName << std::endl;
-	std::cout << "VERTICES" << std::endl;
-	for (unsigned int i = 0; i < _vs.size(); i++)
-		std::cout << _vs[i] << std::endl;
-	std::cout << "TEXTURES" << std::endl;
-	for (unsigned int i = 0; i < _vts.size(); i++)
-		std::cout << _vts[i] << std::endl;
-	std::cout << "NORMALES" << std::endl;
-	for (unsigned int i = 0; i < _vns.size(); i++)
-		std::cout << _vns[i] << std::endl;
-	std::cout << "FACES" << std::endl;
-	for (unsigned int i = 0; i < _vns.size(); i++)
-		std::cout << _vfs[i] << std::endl;
+	// std::cout << "NAME" << std::endl;
+	// 	std::cout << _modelName << std::endl;
+	// std::cout << "VERTICES" << std::endl;
+	// for (unsigned int i = 0; i < _vs.size(); i++)
+	// 	std::cout << _vs[i] << std::endl;
+	// std::cout << "TEXTURES" << std::endl;
+	// for (unsigned int i = 0; i < _vts.size(); i++)
+	// 	std::cout << _vts[i] << std::endl;
+	// std::cout << "NORMALES" << std::endl;
+	// for (unsigned int i = 0; i < _vns.size(); i++)
+	// 	std::cout << _vns[i] << std::endl;
+	// std::cout << "FACES" << std::endl;
+	// for (unsigned int i = 0; i < _vns.size(); i++)
+	// 	std::cout << _vfs[i] << std::endl;
 	_modelFile->close();
 }
 
@@ -103,4 +103,12 @@ bool Model::_isVector2Valid(std::vector<std::string> vt) {
 
 std::string Model::getModelName() const {
 	return _modelName;
+}
+
+std::vector<Vector3<float>> Model::getVertices() const {
+	return _vs;
+}
+
+std::vector<Vector2<float>> Model::getTextures() const {
+	return _vts;
 }

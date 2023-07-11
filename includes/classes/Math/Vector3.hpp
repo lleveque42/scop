@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <exception>
 
 template<typename T>
 class Vector3 {
@@ -19,6 +20,7 @@ class Vector3 {
 		Vector3 &operator-(const Vector3<T> &rhs);
 		Vector3 &operator*(const T &scale);
 		Vector3 &operator=(const Vector3<T> &rhs);
+		T &operator[](unsigned int n);
 
 		friend bool operator==(Vector3<T> &lhs, const Vector3<T> &rhs) {
 			return lhs._x == rhs._x && lhs._y == rhs._y && lhs._z == rhs._z;

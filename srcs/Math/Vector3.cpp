@@ -45,5 +45,19 @@ Vector3<T> &Vector3<T>::operator=(const Vector3<T> &rhs) {
 	return *this;
 }
 
+template<typename T>
+T &Vector3<T>::operator[](unsigned int n) {
+	switch (n) {
+		case 0:
+			return _x;
+		case 1:
+			return _y;
+		case 2:
+			return _z;
+		default:
+			throw std::out_of_range("Out of range while accessing vector3 values.");
+	}
+}
+
 template class Vector3<float>;
 template class Vector3<unsigned int>;

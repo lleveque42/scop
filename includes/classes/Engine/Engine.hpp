@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <cmath>
+#include <stb_image.h>
 
 #include "Model.hpp"
 #include "Shaders.hpp"
@@ -11,6 +12,10 @@
 #define ERR_GLFW_INIT std::invalid_argument("failed to initialize GLFW.")
 #define ERR_GLEW_INIT std::invalid_argument("failed to initialize GLEW.")
 #define ERR_CREATE_WIN std::invalid_argument("could not create window (OpenGL version may be too old).")
+#define ERR_LOADING_TEXTURE std::invalid_argument("could not load texture (file may be missing).")
+
+#define DEFAULT_TEXTURE1_PATH "./resources/container.jpg"
+#define DEFAULT_TEXTURE2_PATH "./resources/awesomeface.png"
 
 #define WIN_WIDTH 640
 #define WIN_HEIGHT 480
@@ -23,24 +28,15 @@ class Engine {
 		GLuint _VBO;
 		GLuint _EBO;
 		Shaders *_shaders;
-		// float _vertices[12] = {
-		// 	 0.0f,  0.5f, 0.0f,
-		// 	 0.5f, -0.5f, 0.0f,
-		// 	-0.5f, -0.5f, 0.0f,
-		// };
-		float _vertices[18] = {
-			0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,
-			-0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,
-			0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f
-		};
-		unsigned int _faces[6] = {
-			0, 1, 2,
-			1, 2, 3
-		};
+		unsigned int _texture1;
+		unsigned int _texture2;
+		float *_vertices;
+		unsigned int _verticesSize;
+		float _mixValue;
 
 		static void _error_callback(int error, const char* description);
 		static void _framebuffer_size_callback(GLFWwindow *window, int width, int height);
-		static void _processInput(GLFWwindow *window);
+		void _processInput(GLFWwindow *window);
 		void _clearShaders();
 
 	public:
@@ -50,6 +46,7 @@ class Engine {
 		void initialize(const std::string &modelName);
 		void loadModel(Model *model);
 		void loadShaders();
+		void loadTexture();
 		void render();
 };
 

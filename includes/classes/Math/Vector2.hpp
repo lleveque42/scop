@@ -18,6 +18,7 @@ class Vector2 {
 		Vector2 &operator-(const Vector2<T> &rhs);
 		Vector2 &operator*(const T &scale);
 		Vector2 &operator=(const Vector2<T> &rhs);
+		T &operator[](unsigned int n);
 
 		friend bool operator==(Vector2<T> &lhs, const Vector2<T> &rhs) {
 			return lhs._x == rhs._x && lhs._y == rhs._y;
