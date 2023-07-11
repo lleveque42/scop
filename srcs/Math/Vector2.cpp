@@ -1,32 +1,45 @@
 #include "Vector2.hpp"
 
-Vector2::Vector2() : _x(0.0f), _y(0.0f) {}
-Vector2::Vector2(float x, float y) : _x(x), _y(y) {}
-Vector2::Vector2(Vector2 const &copy) : _x(copy._x), _y(copy._y) {}
-Vector2::~Vector2() {}
+template <typename T>
+Vector2<T>::Vector2() : _x(0.0f), _y(0.0f) {}
+
+template <typename T>
+Vector2<T>::Vector2(T x, T y) : _x(x), _y(y) {}
+
+template <typename T>
+Vector2<T>::Vector2(Vector2<T> const &copy) : _x(copy._x), _y(copy._y) {}
+
+template <typename T>
+Vector2<T>::~Vector2() {}
 
 
-Vector2 &Vector2::operator+(Vector2 const &rhs) {
+template <typename T>
+Vector2<T> &Vector2<T>::operator+(Vector2<T> const &rhs) {
 	_x += rhs._x;
 	_y += rhs._y;
 	return *this;
 }
 
-Vector2 &Vector2::operator-(Vector2 const &rhs) {
+template <typename T>
+Vector2<T> &Vector2<T>::operator-(Vector2<T> const &rhs) {
 	_x -= rhs._x;
 	_y -= rhs._y;
 	return *this;
 }
 
-Vector2 &Vector2::operator*(const float &scale) {
+template <typename T>
+Vector2<T> &Vector2<T>::operator*(const T &scale) {
 	_x *= scale;
 	_y *= scale;
 	return *this;
 }
 
-Vector2 &Vector2::operator=(Vector2 const &rhs) {
+template <typename T>
+Vector2<T> &Vector2<T>::operator=(Vector2<T> const &rhs) {
 	_x = rhs._x;
 	_y = rhs._y;
 	return *this;
 }
 
+template class Vector2<float>;
+template class Vector2<unsigned int>;
