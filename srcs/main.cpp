@@ -22,7 +22,7 @@ int main(int ac, char **av) {
 		model = new Model(modelPath);
 		model->load();
 		engine = new Engine();
-		engine->initialize();
+		engine->initialize(model->getModelName());
 		engine->loadModel(model);
 		engine->loadShaders();
 		engine->render();

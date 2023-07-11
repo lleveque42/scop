@@ -47,7 +47,7 @@ class Engine {
 		Engine();
 		~Engine();
 
-		void initialize();
+		void initialize(const std::string &modelName);
 		void loadModel(Model *model);
 		void loadShaders();
 		void render();

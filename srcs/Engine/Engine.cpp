@@ -16,12 +16,19 @@ Engine::~Engine() {
 	delete _shaders;
 }
 
-void Engine::initialize() {
+void Engine::initialize(const std::string &modelName) {
+	std::stringstream ssTitle;
+	std::string title = WIN_TITLE;
+
+	if (!modelName.empty()) {
+		ssTitle << WIN_TITLE << " - " << modelName;
+		title = ssTitle.str();
+	}
 	glfwSetErrorCallback(_error_callback);
 	glfwWindowHint(GLFW_SAMPLES, 4); // anti-aliasing
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // OpenGl v3
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); // OpenGl v3.3
-	_window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, WIN_TITLE, NULL, NULL);
+	_window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, title.c_str(), NULL, NULL);
 	if (!_window) {
 		glfwTerminate();
 		throw ERR_CREATE_WIN;
