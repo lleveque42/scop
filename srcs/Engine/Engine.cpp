@@ -1,7 +1,7 @@
 #include "Engine.hpp"
 
-Engine::Engine() : _window(nullptr), _VAO(0), _VBO(0), _EBO(0), _vertexShader(0),
-_fragmentShader(0), _shaderProgram(0) //  _vertices(nullptr), _faces(nullptr) //
+Engine::Engine() : _window(nullptr), _VAO(0), _VBO(0), _EBO(0)
+ //  _vertices(nullptr), _faces(nullptr) //
 {
 	if (!glfwInit())
 		throw std::invalid_argument(ERR_GLFW_INIT);
@@ -33,59 +33,11 @@ void Engine::initialize() {
 	glfwSetFramebufferSizeCallback(_window, _framebuffer_size_callback); // dynamic window size
 }
 
-
 void Engine::loadModel(Model *model) {
 	(void)model;
 }
 
-void Engine::compileShaders(Shaders *shaders) {
-	int  success;
-	char infoLog[512];
-	char *vertexShaderSource = shaders->getVertexShaderSource();
-	char *fragmentShaderSource = shaders->getFragmentShaderSource();
-
-	_vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(_vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(_vertexShader);
-	glGetShaderiv(_vertexShader, GL_COMPILE_STATUS, &success);
-	if(!success) {
-		glGetShaderInfoLog(_vertexShader, 512, NULL, infoLog);
-		free(vertexShaderSource);
-		free(fragmentShaderSource);
-		throw std::invalid_argument(ERR_COMPILE_SHADERS(infoLog));
-	}
-	_fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(_fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(_fragmentShader);
-	glGetShaderiv(_fragmentShader, GL_COMPILE_STATUS, &success);
-	if(!success) {
-		glGetShaderInfoLog(_fragmentShader, 512, NULL, infoLog);
-		free(vertexShaderSource);
-		free(fragmentShaderSource);
-		throw std::invalid_argument(ERR_COMPILE_SHADERS(infoLog));
-	}
-	free(vertexShaderSource);
-	free(fragmentShaderSource);
-}
-
-void Engine::createShaderProgram() {
-	int  success;
-	char infoLog[512];
-
-	_shaderProgram = glCreateProgram();
-	glAttachShader(_shaderProgram, _vertexShader);
-	glAttachShader(_shaderProgram, _fragmentShader);
-	glLinkProgram(_shaderProgram); // link shaders so they can share outputs/communicate
-	glGetProgramiv(_shaderProgram, GL_LINK_STATUS, &success);
-	if(!success) {
-		glGetProgramInfoLog(_shaderProgram, 512, NULL, infoLog);
-		throw std::invalid_argument(ERR_LINK_SHADERS(infoLog));
-	}
-	glDeleteShader(_vertexShader);
-	glDeleteShader(_fragmentShader);
-}
-
-void Engine::render() {
+void Engine::render(Shaders *shaders) {
 	glGenVertexArrays(1, &_VAO);
 	glGenBuffers(1, &_VBO);
 	// glGenBuffers(1, &_EBO);
@@ -97,23 +49,20 @@ void Engine::render() {
 	// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _EBO);
 	// glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_faces), _faces, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 	while (!glfwWindowShouldClose(_window)) {
-		_processInput(_window); // handle inputs
+		_processInput(_window);
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glUseProgram(_shaderProgram);
-
-		float timeValue = glfwGetTime();
-		float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
-		int vertexColorLocation = glGetUniformLocation(_shaderProgram, "ourColor");
-		glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+		shaders->use();
 
 		// render model
 		glBindVertexArray(_VAO);
@@ -136,9 +85,6 @@ void Engine::_clearShaders() {
 	if (_VAO) glDeleteVertexArrays(1, &_VAO);
 	if (_VBO) glDeleteBuffers(1, &_VBO);
 	if (_EBO) glDeleteBuffers(1, &_EBO);
-	if (_vertexShader) glDeleteShader(_vertexShader);
-	if (_fragmentShader) glDeleteShader(_fragmentShader);
-	if (_shaderProgram) glDeleteProgram(_shaderProgram);
 }
 
 //////// CALLBACK FUNCTIONS ////////

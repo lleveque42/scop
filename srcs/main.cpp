@@ -27,9 +27,8 @@ int main(int ac, char **av) {
 		shaders->load();
 		engine->initialize();
 		engine->loadModel(model);
-		engine->compileShaders(shaders);
-		engine->createShaderProgram();
-		engine->render();
+		shaders->compile();
+		engine->render(shaders);
 	} catch (std::exception &e) {
 		std::cerr << ERR << e.what() << std::endl;
 		clear(model, shaders, engine);
