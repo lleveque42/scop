@@ -34,9 +34,10 @@ class Model {
 		void load();
 		std::ifstream *getModelFile() const;
 		std::string getModelName() const;
-		std::vector<Vector3<float>> getVertices() const;
-		std::vector<Vector2<float>> getTextures() const;
-		// std::vector<Vector2> _vts;
-		// std::vector<Vector3> _vns;
-		// std::vector<Vector3> _vfs;
+		float *getVertices() const;
+		float *getTextures() const;
+		unsigned int *getFaces() const;
+		unsigned int getVerticesSize() const;
+		unsigned int getTexturesSize() const;
+		unsigned int getFacesSize() const;
 };

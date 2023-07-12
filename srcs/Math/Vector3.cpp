@@ -46,7 +46,7 @@ Vector3<T> &Vector3<T>::operator=(const Vector3<T> &rhs) {
 }
 
 template<typename T>
-T &Vector3<T>::operator[](unsigned int n) {
+const T &Vector3<T>::operator[](unsigned int n) const {
 	switch (n) {
 		case 0:
 			return _x;

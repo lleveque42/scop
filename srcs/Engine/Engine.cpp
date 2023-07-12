@@ -1,12 +1,13 @@
 #include "Engine.hpp"
 
-Engine::Engine() : _window(nullptr), _VAO(0), _VBO(0), _EBO(0), _shaders(nullptr),
-_texture1(0), _mixValue(0)
- //  _vertices(nullptr), _faces(nullptr) //
+Engine::Engine() : _window(nullptr), _vao(0), _vboVertices(0), _vboTextures(0),
+_vboNormales(0), _ebo(0), _shaders(nullptr), _texture1(0), _mixValue(0),
+_vertices(nullptr), _verticesSize(0), _textures(nullptr), _texturesSize(0)
 {
 	if (!glfwInit())
 		throw ERR_GLFW_INIT;
 	_shaders = new Shaders();
+	_matrix = new Matrix();
 }
 
 Engine::~Engine() {
@@ -15,7 +16,10 @@ Engine::~Engine() {
 	_clearShaders();
 	glfwTerminate();
 	delete _shaders;
-	delete _vertices;
+	delete _matrix;
+	delete[] _vertices;
+	delete[] _textures;
+	delete[] _faces;
 }
 
 void Engine::initialize(const std::string &modelName) {
@@ -45,31 +49,42 @@ void Engine::initialize(const std::string &modelName) {
 }
 
 void Engine::loadModel(Model *model) {
-	(void)model;
-	std::vector<Vector3<float>> vs = model->getVertices();
-	std::vector<Vector2<float>> vts = model->getTextures();
+	float minX, maxX, minY, maxY, minZ, maxZ = 0;
+	float deltaX, deltaY, deltaZ = 0;
 
-	_vertices = new float[vs.size() * 3 + vts.size() * 2];
-	_verticesSize = vs.size();
-	for (unsigned int i = 0; i < vs.size(); i++) {
-		_vertices[i * 5] = vs[i][0];
-		_vertices[i * 5 + 1] = vs[i][1];
-		_vertices[i * 5 + 2] = vs[i][2];
+	_vertices = model->getVertices();
+	_textures = model->getTextures();
+	// std::vector<Vector2<float>> vts = model->getTextures();
+	_faces = model->getFaces();
+	_verticesSize = model->getVerticesSize();
+	_texturesSize = model->getTexturesSize();
+	_facesSize = model->getFacesSize();
+	if (_verticesSize > 0) {
+		minX = maxX = _vertices[0];
+		minY = maxY = _vertices[1];
+		minZ = maxZ = _vertices[2];
 	}
-	for (unsigned int i = 0; i < vts.size(); i++) {
-		_vertices[i * 5 + 3] = vts[i][0];
-		_vertices[i * 5 + 4] = vts[i][1];
+	for (unsigned int i = 1; i < _verticesSize; i++) {
+		minX = _vertices[i * 3] < minX ? _vertices[i * 3] : minX;
+		maxX = _vertices[i * 3] > maxX ? _vertices[i * 3] : maxX;
+		minY = _vertices[i * 3 + 1] < minY ? _vertices[i * 3 + 1] : minY;
+		maxY = _vertices[i * 3 + 1] > maxY ? _vertices[i * 3 + 1] : maxY;
+		minZ = _vertices[i * 3 + 2] < minZ ? _vertices[i * 3 + 2] : minZ;
+		maxZ = _vertices[i * 3 + 2] > maxZ ? _vertices[i * 3 + 2] : maxZ;
+	}
+	deltaX = maxX - minX;
+	deltaY = maxY - minY;
+	deltaZ = maxZ - minZ;
+	for (unsigned int i = 0; i < _verticesSize * 3; i += 3) {
+		_vertices[i] = (_vertices[i] - minX) / deltaX * 2.0f - 1.0f;
+		_vertices[i + 1] = (_vertices[i + 1] - minY) / deltaY * 2.0f - 1.0f;
+		_vertices[i + 2] = (_vertices[i + 2] - minZ) / deltaZ * 2.0f - 1.0f;
 	}
 }
 
 void Engine::loadShaders() {
 	_shaders->load();
 	_shaders->compile();
-	std::cout << _verticesSize << std::endl;
-	for (unsigned int i = 0; i < _verticesSize * 5; i += 5) {
-		std::cout << "v " << _vertices[i] << " " << _vertices[i + 1] << " " << _vertices[i + 2];
-		std::cout << " vt " << _vertices[i + 3] << " " << _vertices[i + 4] << std::endl;
-	}
 }
 
 void Engine::loadTexture() {
@@ -107,32 +122,43 @@ void Engine::loadTexture() {
 }
 
 void Engine::render() {
-	unsigned int indices[] = {
-		0, 1, 3, // first triangle
-		1, 2, 3  // second triangle
-	};
+	std::cout << _verticesSize << std::endl;
+	for (unsigned int i = 0; i < _verticesSize * 3; i += 3)
+		std::cout << "v " << _vertices[i] << " " << _vertices[i + 1] << " " << _vertices[i + 2] << std::endl;
+	std::cout << _texturesSize << std::endl;
+	for (unsigned int i = 0; i < _texturesSize * 2; i += 2)
+		std::cout << " vt " << _textures[i] << " " << _textures[i + 1] << std::endl;
+	std::cout << _facesSize << std::endl;
+	for (unsigned int i = 0; i < _facesSize * 3; i += 3)
+		std::cout << " f " << _faces[i] << " " << _faces[i + 1] << " " << _faces[i + 2] << std::endl;
 
-	glGenVertexArrays(1, &_VAO);
-	glGenBuffers(1, &_VBO);
-	glGenBuffers(1, &_EBO);
+	glGenVertexArrays(1, &_vao);
+	glGenBuffers(1, &_vboVertices);
+	glGenBuffers(1, &_vboTextures);
+	// glGenBuffers(1, &_vboNormales);
+	glGenBuffers(1, &_ebo);
+	glBindVertexArray(_vao);
 
-	glBindVertexArray(_VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, _vboVertices);
+	glBufferData(GL_ARRAY_BUFFER, _verticesSize * sizeof(float) * 3, _vertices, GL_STATIC_DRAW);
 
-	// bind vertices in vbo
-	glBindBuffer(GL_ARRAY_BUFFER, _VBO);
-	glBufferData(GL_ARRAY_BUFFER, _verticesSize * sizeof(float) * 5, _vertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, _vboTextures);
+	glBufferData(GL_ARRAY_BUFFER, _texturesSize * sizeof(float) * 2, _textures, GL_STATIC_DRAW);
 
-	// bind indices in ebo
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, _facesSize * sizeof(unsigned int) * 3, _faces, GL_STATIC_DRAW);
 
 	// for positions coordinates
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, _vboVertices);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
-	// for textures coordinates
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, _vboTextures);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+
+	_matrix->rotateY(-M_PI / 2);
+	_matrix->scale(0.5);
 
 	while (!glfwWindowShouldClose(_window)) {
 		_processInput(_window);
@@ -144,12 +170,15 @@ void Engine::render() {
 		_shaders->setInt("texture1", 0);
 		_shaders->setInt("texture2", 1);
 		_shaders->setFloat("mixValue", _mixValue);
+		_shaders->setMat4("transform", _matrix->getMat4());
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, _texture1);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, _texture2);
-		glBindVertexArray(_VAO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glPointSize(7.0f);
+		glBindVertexArray(_vao);
+		// glDrawArrays(GL_POINTS, 0, _verticesSize * 3);
+		glDrawElements(GL_TRIANGLES, _facesSize * 3, GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(_window);
 		glfwPollEvents();
@@ -163,18 +192,20 @@ void Engine::_processInput(GLFWwindow *window) {
 		glfwSetWindowShouldClose(window, true);
 	else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
 		if (_mixValue < 1)
-			_mixValue += 0.02;
+			_mixValue += 0.01;
 	}
 	else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
 		if (_mixValue > 0)
-			_mixValue -= 0.02;
+			_mixValue -= 0.01;
 	}
 }
 
 void Engine::_clearShaders() {
-	if (_VAO) glDeleteVertexArrays(1, &_VAO);
-	if (_VBO) glDeleteBuffers(1, &_VBO);
-	if (_EBO) glDeleteBuffers(1, &_EBO);
+	if (_vao) glDeleteVertexArrays(1, &_vao);
+	if (_vboVertices) glDeleteBuffers(1, &_vboVertices);
+	if (_vboTextures) glDeleteBuffers(1, &_vboTextures);
+	if (_vboNormales) glDeleteBuffers(1, &_vboNormales);
+	if (_ebo) glDeleteBuffers(1, &_ebo);
 }
 
 //////// CALLBACK FUNCTIONS ////////

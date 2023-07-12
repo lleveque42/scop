@@ -58,20 +58,6 @@ void Model::load() {
 		}
 		i++;
 	}
-	// std::cout << "NAME" << std::endl;
-	// 	std::cout << _modelName << std::endl;
-	// std::cout << "VERTICES" << std::endl;
-	// for (unsigned int i = 0; i < _vs.size(); i++)
-	// 	std::cout << _vs[i] << std::endl;
-	// std::cout << "TEXTURES" << std::endl;
-	// for (unsigned int i = 0; i < _vts.size(); i++)
-	// 	std::cout << _vts[i] << std::endl;
-	// std::cout << "NORMALES" << std::endl;
-	// for (unsigned int i = 0; i < _vns.size(); i++)
-	// 	std::cout << _vns[i] << std::endl;
-	// std::cout << "FACES" << std::endl;
-	// for (unsigned int i = 0; i < _vns.size(); i++)
-	// 	std::cout << _vfs[i] << std::endl;
 	_modelFile->close();
 }
 
@@ -105,10 +91,43 @@ std::string Model::getModelName() const {
 	return _modelName;
 }
 
-std::vector<Vector3<float>> Model::getVertices() const {
-	return _vs;
+float *Model::getVertices() const {
+	float *vertices = new float[_vs.size() * 3];
+	for (unsigned int i = 0; i < _vs.size(); i++) {
+		vertices[i * 3] = _vs[i][0];
+		vertices[i * 3 + 1] = _vs[i][1];
+		vertices[i * 3 + 2] = _vs[i][2];
+	}
+	return vertices;
 }
 
-std::vector<Vector2<float>> Model::getTextures() const {
-	return _vts;
+float *Model::getTextures() const {
+	float *textures = new float[_vts.size() * 2];
+	for (unsigned int i = 0; i < _vts.size(); i++) {
+		textures[i * 2] = _vts[i][0];
+		textures[i * 2 + 1] = _vts[i][1];
+	}
+	return textures;
+}
+
+unsigned int *Model::getFaces() const {
+	unsigned int *faces = new unsigned int[_vfs.size() * 3];
+	for (unsigned int i = 0; i < _vfs.size(); i++) {
+		faces[i * 3] = _vfs[i][0];
+		faces[i * 3 + 1] = _vfs[i][1];
+		faces[i * 3 + 2] = _vfs[i][2];
+	}
+	return faces;
+}
+
+unsigned int Model::getVerticesSize() const {
+	return _vs.size();
+}
+
+unsigned int Model::getTexturesSize() const {
+	return _vts.size();
+}
+
+unsigned int Model::getFacesSize() const {
+	return _vfs.size();
 }

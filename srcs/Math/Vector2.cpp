@@ -42,7 +42,7 @@ Vector2<T> &Vector2<T>::operator=(Vector2<T> const &rhs) {
 }
 
 template<typename T>
-T &Vector2<T>::operator[](unsigned int n) {
+const T &Vector2<T>::operator[](unsigned int n) const {
 	switch (n) {
 		case 0:
 			return _x;
