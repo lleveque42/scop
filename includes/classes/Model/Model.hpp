@@ -16,6 +16,19 @@
 #define NORMAL_PREFIX "vn "
 #define FACE_PREFIX "f "
 
+struct Vertex {
+	Vector3<float> vertices;
+	Vector2<float> textures;
+	Vector3<float> normals;
+};
+
+enum facesType {
+	NONE,
+	V,
+	VTN,
+	UNKNOWN
+};
+
 class Model {
 	private:
 		std::string _modelPath;
@@ -24,20 +37,21 @@ class Model {
 		std::vector<Vector3<float>> _vs;
 		std::vector<Vector2<float>> _vts;
 		std::vector<Vector3<float>> _vns;
-		std::vector<Vector3<unsigned int>> _vfs;
-		bool _isVector2Valid(std::vector<std::string> vec2);
-		bool _isVector3Valid(std::vector<std::string> vec3);
+		std::vector<Vertex> _vertices;
+		facesType _facesType;
+
+		facesType _getFacesType(const std::string &line);
+		void _parseFaces(const std::string &line, unsigned int i);
 
 	public:
 		Model(std::string modelPath);
 		~Model();
+
 		void load();
 		std::ifstream *getModelFile() const;
 		std::string getModelName() const;
 		float *getVertices() const;
 		float *getTextures() const;
-		unsigned int *getFaces() const;
-		unsigned int getVerticesSize() const;
-		unsigned int getTexturesSize() const;
-		unsigned int getFacesSize() const;
+		float *getNormals() const;
+		unsigned int getVerticesNumber() const;
 };

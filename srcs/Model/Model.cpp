@@ -1,7 +1,7 @@
 #include "Model.hpp"
 #include "utils.hpp"
 
-Model::Model(std::string modelPath) {
+Model::Model(std::string modelPath) : _facesType(NONE) {
 	_modelPath = modelPath;
 	_modelFile = new std::ifstream(modelPath);
 	if (!_modelFile->is_open()) {
@@ -18,10 +18,6 @@ std::ifstream *Model::getModelFile() const {
 	return _modelFile;
 }
 
-// TMP ////
-#include <iostream>
-// TMP ////
-
 void Model::load() {
 	unsigned int i = 1;
 	std::string line;
@@ -29,62 +25,50 @@ void Model::load() {
 
 	while (getline(*_modelFile, line)) {
 		if (utils::startsWith(line, NAME_PREFIX)) {
-			splittedLine = utils::split(line);
+			splittedLine = utils::split(line, ' ');
 			_modelName = splittedLine[1];
 		}
 		else if (utils::startsWith(line, VERTICE_PREFIX)) {
-			splittedLine = utils::split(line);
-			if (_isVector3Valid(splittedLine))
+			splittedLine = utils::split(line, ' ');
+			if (splittedLine.size() != 4)
 				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
-			_vs.push_back(Vector3<float>(std::stof(splittedLine[1]), std::stof(splittedLine[2]), std::stof(splittedLine[3])));
+			try {
+				_vs.push_back(Vector3<float>(std::stof(splittedLine[1]), std::stof(splittedLine[2]), std::stof(splittedLine[3])));
+			} catch (std::exception &e) {
+				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
+			}
 		}
 		else if (utils::startsWith(line, TEXTURE_PREFIX)) {
-			splittedLine = utils::split(line);
-			if (_isVector2Valid(splittedLine))
+			splittedLine = utils::split(line, ' ');
+			if (splittedLine.size() != 3)
 				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
-			_vts.push_back(Vector2<float>(std::stof(splittedLine[1]), std::stof(splittedLine[2])));
+			try {
+				_vts.push_back(Vector2<float>(std::stof(splittedLine[1]), std::stof(splittedLine[2])));
+			} catch (std::exception &e) {
+				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
+			}
 		}
 		else if (utils::startsWith(line, NORMAL_PREFIX)) {
-			splittedLine = utils::split(line);
-			if (_isVector3Valid(splittedLine))
+			splittedLine = utils::split(line, ' ');
+			if (splittedLine.size() != 4)
 				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
-			_vns.push_back(Vector3<float>(std::stof(splittedLine[1]), std::stof(splittedLine[2]), std::stof(splittedLine[3])));
+			try {
+				_vns.push_back(Vector3<float>(std::stof(splittedLine[1]), std::stof(splittedLine[2]), std::stof(splittedLine[3])));
+			} catch (std::exception &e) {
+				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
+			}
 		}
 		else if (utils::startsWith(line, FACE_PREFIX)) {
-			splittedLine = utils::split(line);
-			if (_isVector3Valid(splittedLine))
-				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
-			_vfs.push_back(Vector3<unsigned int>(std::stof(splittedLine[1]), std::stof(splittedLine[2]), std::stof(splittedLine[3])));
+			if (_facesType == NONE) {
+				_facesType = _getFacesType(line);
+				if (_facesType == UNKNOWN)
+					throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
+			}
+			_parseFaces(line, i);
 		}
 		i++;
 	}
 	_modelFile->close();
-}
-
-bool Model::_isVector3Valid(std::vector<std::string> v) {
-	if (v.size() != 4)
-		return true;
-	for (long unsigned int i = 1; i < v.size(); i++) {
-		try {
-			std::stof(v[i]);
-		} catch (std::exception &e) {
-			return true;
-		}
-	}
-	return false;
-}
-
-bool Model::_isVector2Valid(std::vector<std::string> vt) {
-	if (vt.size() != 3)
-		return true;
-	for (long unsigned int i = 1; i < vt.size(); i++) {
-		try {
-			std::stof(vt[i]);
-		} catch (std::exception &e) {
-			return true;
-		}
-	}
-	return false;
 }
 
 std::string Model::getModelName() const {
@@ -92,42 +76,90 @@ std::string Model::getModelName() const {
 }
 
 float *Model::getVertices() const {
-	float *vertices = new float[_vs.size() * 3];
-	for (unsigned int i = 0; i < _vs.size(); i++) {
-		vertices[i * 3] = _vs[i][0];
-		vertices[i * 3 + 1] = _vs[i][1];
-		vertices[i * 3 + 2] = _vs[i][2];
+	float *vertices = new float[_vertices.size() * 3];
+	for (unsigned int i = 0; i < _vertices.size(); i++) {
+		vertices[i * 3] = _vertices[i].vertices[0];
+		vertices[i * 3 + 1] =	_vertices[i].vertices[1];
+		vertices[i * 3 + 2] = 	_vertices[i].vertices[2];
 	}
 	return vertices;
 }
 
 float *Model::getTextures() const {
-	float *textures = new float[_vts.size() * 2];
-	for (unsigned int i = 0; i < _vts.size(); i++) {
-		textures[i * 2] = _vts[i][0];
-		textures[i * 2 + 1] = _vts[i][1];
+	float *textures = new float[_vertices.size() * 2];
+	for (unsigned int i = 0; i < _vertices.size(); i++) {
+		textures[i * 2] = _vertices[i].textures[0];
+		textures[i * 2 + 1] =	_vertices[i].textures[1];
 	}
 	return textures;
 }
 
-unsigned int *Model::getFaces() const {
-	unsigned int *faces = new unsigned int[_vfs.size() * 3];
-	for (unsigned int i = 0; i < _vfs.size(); i++) {
-		faces[i * 3] = _vfs[i][0];
-		faces[i * 3 + 1] = _vfs[i][1];
-		faces[i * 3 + 2] = _vfs[i][2];
+float *Model::getNormals() const {
+	float *normals = new float[_vertices.size() * 3];
+	for (unsigned int i = 0; i < _vertices.size(); i++) {
+		normals[i * 3] = _vertices[i].normals[0];
+		normals[i * 3 + 1] =_vertices[i].normals[1];
+		normals[i * 3 + 2] = _vertices[i].normals[2];
 	}
-	return faces;
+	return normals;
 }
 
-unsigned int Model::getVerticesSize() const {
-	return _vs.size();
+unsigned int Model::getVerticesNumber() const {
+	return _vertices.size();
 }
 
-unsigned int Model::getTexturesSize() const {
-	return _vts.size();
+facesType Model::_getFacesType(const std::string &line) {
+	unsigned int slashCount = std::count(line.begin(), line.end(), '/');
+	if (slashCount == 0)
+		return V;
+	else if (slashCount == 6) {
+		int count = 0;
+		for (unsigned int i = 0; i < line.length() - 2; ++i)
+			if (line[i] == '/' && line[i + 1] == '/')
+				++count;
+		return count ? UNKNOWN : VTN;
+	} else return UNKNOWN;
 }
 
-unsigned int Model::getFacesSize() const {
-	return _vfs.size();
+void Model::_parseFaces(const std::string &line, unsigned int i) {
+	std::vector<std::string> splittedLine;
+	std::vector<std::string> slashLine;
+
+	if (_facesType == V) {
+		std::vector<unsigned int> faces;
+
+		splittedLine = utils::split(line, ' ');
+		if (splittedLine.size() != 4)
+			throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
+		try {
+			faces.push_back(std::stoul(splittedLine[1]));
+			faces.push_back(std::stoul(splittedLine[2]));
+			faces.push_back(std::stoul(splittedLine[3]));
+		} catch(std::exception &e) {
+			throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
+		}
+	} else if (_facesType == VTN) {
+		std::vector<Vector3<unsigned int>> faces;
+
+		splittedLine = utils::split(line, ' ');
+		if (splittedLine.size() != 4)
+			throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
+		for (unsigned int i = 1; i < splittedLine.size(); i++) {
+			slashLine = utils::split(splittedLine[i], '/');
+			if (slashLine.size() != 3)
+				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
+			try {
+				faces.push_back(Vector3<unsigned int>(std::stoul(slashLine[0]), std::stoul(slashLine[1]), std::stoul(slashLine[2])));
+			} catch(std::exception &e) {
+				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
+			}
+		}
+		for (unsigned int i = 0; i < faces.size(); i++) {
+			Vertex vertex;
+			vertex.vertices = _vs[faces[i][0] - 1];
+			vertex.textures = _vts[faces[i][1] - 1];
+			vertex.normals = _vns[faces[i][2] - 1];
+			_vertices.push_back(vertex);
+		}
+	}
 }

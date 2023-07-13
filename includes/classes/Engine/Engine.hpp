@@ -36,18 +36,15 @@ class Engine {
 		unsigned int _texture2;
 		float _mixValue;
 		float *_vertices;
-		unsigned int _verticesSize;
+		unsigned int _verticesNumber;
 		float *_textures;
-		unsigned int _texturesSize;
-		float *_normales;
-		unsigned int _normalesSize;
-		unsigned int *_faces;
-		unsigned int _facesSize;
+		float *_normals;
 
 		static void _error_callback(int error, const char* description);
 		static void _framebuffer_size_callback(GLFWwindow *window, int width, int height);
 		void _processInput(GLFWwindow *window);
 		void _clearShaders();
+		void _normalizeVertices();
 
 	public:
 		Engine();
