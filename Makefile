@@ -14,7 +14,7 @@ CXX := g++
 CXXFLAGS := -Wall -Wextra -Werror -pedantic -std=c++11 -MMD
 CXXINCLUDES := -I$(DIR_GLFW)/include/ -I$(DIR_GLEW)/include/ -I$(DIR_STB)/include/ $(shell bash ./scripts/generate_includes.sh)
 
-CXXDEPENDENCIES := -L$(DIR_GLFW)/lib -lglfw3 -L$(DIR_GLEW) -lGLEW -lGL -lX11
+CXXDEPENDENCIES := -L$(DIR_GLFW)/lib -lglfw3 -L$(DIR_GLEW)/lib -lGLEW -lGL -lX11
 
 MKDIR := mkdir -p
 RM := rm -rf
