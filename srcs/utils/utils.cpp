@@ -19,19 +19,19 @@ void utils::checkArg(int ac, char **av) {
 	obj_file.close();
 }
 
-bool utils::startsWith(const std::string str, const char *sub) {
+bool utils::startsWith(const std::string &str, const char *sub) {
 	return str.find(sub, 0) == 0;
 }
 
-std::vector<std::string> utils::split(const std::string str) {
-	std::string s;
+std::vector<std::string> utils::split(const std::string &str, const char delimiter) {
+	std::string token;
 	std::stringstream ss(str);
-	std::vector<std::string> out;
+	std::vector<std::string> tokens;
 
-	while (getline(ss, s, ' ')) {
-		if (s != " ")
-			out.push_back(s);
+	while (getline(ss, token, delimiter)) {
+		if (!token.empty())
+			tokens.push_back(token);
 	}
-	return out;
+	return tokens;
 }
 
