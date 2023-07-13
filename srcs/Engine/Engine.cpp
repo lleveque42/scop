@@ -160,7 +160,6 @@ void Engine::render() {
 		glBindVertexArray(_vao);
 		glDrawArrays(GL_POINTS, 0, _verticesNumber);
 		glDrawArrays(GL_TRIANGLES, 0, _verticesNumber);
-	// std::cout << "fefe\n";
 		// glDrawElements(GL_TRIANGLES, _verticesNumber, GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(_window);
