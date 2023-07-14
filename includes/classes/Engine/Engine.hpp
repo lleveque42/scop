@@ -9,6 +9,7 @@
 #include "Model.hpp"
 #include "Shaders.hpp"
 #include "Matrix.hpp"
+#include "structs.hpp"
 
 #define ERR_GLFW_INIT std::invalid_argument("failed to initialize GLFW.")
 #define ERR_GLEW_INIT std::invalid_argument("failed to initialize GLEW.")
@@ -26,6 +27,7 @@ class Engine {
 	private:
 		GLFWwindow *_window;
 		GLuint _vao;
+		GLuint _vbo;
 		GLuint _vboVertices;
 		GLuint _vboTextures;
 		GLuint _vboNormals;
@@ -35,22 +37,23 @@ class Engine {
 		unsigned int _texture1;
 		unsigned int _texture2;
 		float _mixValue;
-		float *_vertices;
-		float *_textures;
-		float *_normals;
-		unsigned int *_indices;
-		// /////
-		unsigned int _verticesNumber;
-		unsigned int _texturesNumber;
-		unsigned int _normalsNumber;
-		unsigned int _indicesNumber;
+		std::vector<Triangle> _triangles;
+		std::vector<unsigned int> _indices;
+		// float *_vertices;
+		// float *_textures;
+		// float *_normals;
+		// unsigned int *_indices;
+		// // /////
+		// unsigned int _verticesNumber;
+		// unsigned int _texturesNumber;
+		// unsigned int _normalsNumber;
+		// unsigned int _indicesNumber;
 
 
 		static void _error_callback(int error, const char* description);
 		static void _framebuffer_size_callback(GLFWwindow *window, int width, int height);
 		void _processInput(GLFWwindow *window);
 		void _clearShaders();
-		void _normalizeVertices();
 
 	public:
 		Engine();

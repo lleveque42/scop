@@ -1,8 +1,7 @@
 #include "Engine.hpp"
 
 Engine::Engine() : _window(nullptr), _vao(0), _vboVertices(0), _vboTextures(0),
-_vboNormals(0), _ebo(0), _shaders(nullptr), _texture1(0), _mixValue(0),
-_vertices(nullptr), _textures(nullptr), _normals(nullptr), _indices(nullptr)
+_vboNormals(0), _ebo(0), _shaders(nullptr), _texture1(0), _mixValue(0)
 {
 	if (!glfwInit())
 		throw ERR_GLFW_INIT;
@@ -17,9 +16,6 @@ Engine::~Engine() {
 	glfwTerminate();
 	delete _shaders;
 	delete _matrix;
-	delete[] _vertices;
-	delete[] _textures;
-	delete[] _normals;
 }
 
 void Engine::initialize(const std::string &modelName) {
@@ -49,16 +45,61 @@ void Engine::initialize(const std::string &modelName) {
 }
 
 void Engine::loadModel(Model *model) {
-	_vertices = model->getVertices();
-	_textures = model->getTextures();
-	_normals = model->getNormals();
-	_indices = model->getIndices();
-	_verticesNumber = model->getVerticesSize();
-	_texturesNumber = model->getTexturesSize();
-	_normalsNumber = model->getNormalsSize();
-	_indicesNumber = model->getIndicesSize();
-	// _verticesNumber = model->getVerticesNumber();
-	_normalizeVertices();
+	std::vector<Vertex> vertices = model->getVertices();
+	std::vector<Texture> textures = model->getTextures();
+	std::vector<Normal> normals = model->getNormals();
+	std::vector<Face> faces = model->getFaces();
+
+	for (const Face &face : faces) {
+		Triangle triangle;
+
+		triangle.vertices[0] = vertices[face.verticesIndices[0] - 1];
+		triangle.vertices[1] = vertices[face.verticesIndices[1] - 1];
+		triangle.vertices[2] = vertices[face.verticesIndices[2] - 1];
+		triangle.textures[0] = textures[face.texturesIndices[0] - 1];
+		triangle.textures[1] = textures[face.texturesIndices[1] - 1];
+		triangle.textures[2] = textures[face.texturesIndices[2] - 1];
+		triangle.normals[0] = normals[face.normalsIndices[0] - 1];
+		triangle.normals[1] = normals[face.normalsIndices[1] - 1];
+		triangle.normals[2] = normals[face.normalsIndices[2] - 1];
+		_triangles.push_back(triangle);
+		_indices.push_back(face.verticesIndices[0] - 1);
+		_indices.push_back(face.verticesIndices[1] - 1);
+		_indices.push_back(face.verticesIndices[2] - 1);
+	}
+	// std::cout << "TRIANGLES " << _triangles.size() << "\n";
+	// int j = 0;
+	// for (const Triangle &triangle : _triangles) {
+	// 	std::cout << " TRIANGLE N " << j << '\n' ;
+	// 	std::cout << "Vertex 0" << "\n";
+	// 	std::cout << "x: " << triangle.vertices[0].x;
+	// 	std::cout << " y: " << triangle.vertices[0].y;
+	// 	std::cout << " z: " << triangle.vertices[0].z << std::endl;
+	// 	std::cout << "u: " << triangle.textures[0].u;
+	// 	std::cout << " v: " << triangle.textures[0].v << std::endl;
+	// 	std::cout << "x: " << triangle.normals[0].nx;
+	// 	std::cout << " y: " << triangle.normals[0].ny;
+	// 	std::cout << " z: " << triangle.normals[0].nz << std::endl;
+	// 	std::cout << "Vertex 1" << "\n";
+	// 	std::cout << "x: " << triangle.vertices[1].x;
+	// 	std::cout << " y: " << triangle.vertices[1].y;
+	// 	std::cout << " z: " << triangle.vertices[1].z << std::endl;
+	// 	std::cout << "u: " << triangle.textures[1].u;
+	// 	std::cout << " v: " << triangle.textures[1].v << std::endl;
+	// 	std::cout << "x: " << triangle.normals[1].nx;
+	// 	std::cout << " y: " << triangle.normals[1].ny;
+	// 	std::cout << " z: " << triangle.normals[1].nz << std::endl;
+	// 	std::cout << "Vertex 2" << "\n";
+	// 	std::cout << "x: " << triangle.vertices[2].x;
+	// 	std::cout << " y: " << triangle.vertices[2].y;
+	// 	std::cout << " z: " << triangle.vertices[2].z << std::endl;
+	// 	std::cout << "u: " << triangle.textures[2].u;
+	// 	std::cout << " v: " << triangle.textures[2].v << std::endl;
+	// 	std::cout << "x: " << triangle.normals[2].nx;
+	// 	std::cout << " y: " << triangle.normals[2].ny;
+	// 	std::cout << " z: " << triangle.normals[2].nz << std::endl;
+	// 	j++;
+	// }
 }
 
 void Engine::loadShaders() {
@@ -101,52 +142,50 @@ void Engine::loadTexture() {
 }
 
 void Engine::render() {
-	std::cout << _verticesNumber << std::endl;
-	for (unsigned int i = 0; i < _verticesNumber * 3; i += 3)
-		std::cout << "v " << _vertices[i] << " " << _vertices[i + 1] << " " << _vertices[i + 2] << std::endl;
-	std::cout << _texturesNumber << std::endl;
-	for (unsigned int i = 0; i < _texturesNumber * 2; i += 2)
-		std::cout << " vt " << _textures[i] << " " << _textures[i + 1] << std::endl;
-	std::cout << _normalsNumber << std::endl;
-	for (unsigned int i = 0; i < _normalsNumber * 3; i += 3)
-		std::cout << "n " << _normals[i] << " " << _normals[i + 1] << " " << _normals[i + 2] << std::endl;
-	std::cout << _indicesNumber << std::endl;
-	for (unsigned int i = 0; i < _indicesNumber; i += 3)
+	// std::cout << _verticesNumber << std::endl;
+	// for (unsigned int i = 0; i < _verticesNumber * 3; i += 3)
+	// 	std::cout << "v " << _vertices[i] << " " << _vertices[i + 1] << " " << _vertices[i + 2] << std::endl;
+	// std::cout << _texturesNumber << std::endl;
+	// for (unsigned int i = 0; i < _texturesNumber * 2; i += 2)
+	// 	std::cout << " vt " << _textures[i] << " " << _textures[i + 1] << std::endl;
+	// std::cout << _normalsNumber << std::endl;
+	// for (unsigned int i = 0; i < _normalsNumber * 3; i += 3)
+	// 	std::cout << "n " << _normals[i] << " " << _normals[i + 1] << " " << _normals[i + 2] << std::endl;
+	// std::cout << _indicesNumber << std::endl;
+	for (unsigned int i = 0; i < _indices.size(); i += 3)
 		std::cout << " f " << _indices[i] << " " << _indices[i + 1] << " " << _indices[i + 2] << std::endl;
 
 	glGenVertexArrays(1, &_vao);
-	glGenBuffers(1, &_vboVertices);
-	glGenBuffers(1, &_vboTextures);
-	glGenBuffers(1, &_vboNormals);
+	glGenBuffers(1, &_vbo);
+	// glGenBuffers(1, &_vboTextures);
+	// glGenBuffers(1, &_vboNormals);
 	glGenBuffers(1, &_ebo);
 	glBindVertexArray(_vao);
 
-	glBindBuffer(GL_ARRAY_BUFFER, _vboVertices);
-	glBufferData(GL_ARRAY_BUFFER, _verticesNumber * sizeof(float) * 3, _vertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+	glBufferData(GL_ARRAY_BUFFER, _triangles.size() * sizeof(Triangle), _triangles.data(), GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ARRAY_BUFFER, _vboTextures);
+	// for positions coordinates
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Triangle), (void*) offsetof(Triangle, vertices));
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Triangle), (void*) offsetof(Triangle, textures));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Triangle), (void*) offsetof(Triangle, normals));
+	glEnableVertexAttribArray(2);
+
+	// glBindBuffer(GL_ARRAY_BUFFER, _vboTextures);
 	// glBufferData(GL_ARRAY_BUFFER, _verticesNumber * sizeof(float), _textures, GL_STATIC_DRAW);
-	glBufferData(GL_ARRAY_BUFFER, _texturesNumber * sizeof(float) * 2, _textures, GL_STATIC_DRAW);
+	// glBufferData(GL_ARRAY_BUFFER, _texturesNumber * sizeof(float) * 2, _textures, GL_STATIC_DRAW);
 
 	// glBindBuffer(GL_ARRAY_BUFFER, _vboNormals);
 	// glBufferData(GL_ARRAY_BUFFER, _verticesNumber * sizeof(float), _normals, GL_STATIC_DRAW);
 	// glBufferData(GL_ARRAY_BUFFER, _normalsNumber * sizeof(float) * 3, _normals, GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indicesNumber * sizeof(unsigned int), _indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.size() * sizeof(unsigned int), _indices.data(), GL_STATIC_DRAW);
 
-	// for positions coordinates
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, _vboVertices);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, _vboTextures);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-
-	glEnableVertexAttribArray(2);
-	glBindBuffer(GL_ARRAY_BUFFER, _vboNormals);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	_shaders->setInt("texture1", 0);
+	_shaders->setInt("texture2", 1);
 
 	_matrix->rotateY(-M_PI / 2);
 	_matrix->scale(0.5);
@@ -158,8 +197,6 @@ void Engine::render() {
 		glClear(GL_COLOR_BUFFER_BIT);
 		glFrontFace(GL_CCW);
 		_shaders->use();
-		_shaders->setInt("texture1", 0);
-		_shaders->setInt("texture2", 1);
 		_shaders->setFloat("mixValue", _mixValue);
 		_shaders->setMat4("transform", _matrix->getMat4());
 		glActiveTexture(GL_TEXTURE0);
@@ -168,9 +205,9 @@ void Engine::render() {
 		glBindTexture(GL_TEXTURE_2D, _texture2);
 		glPointSize(7.0f);
 		glBindVertexArray(_vao);
-		glDrawArrays(GL_POINTS, 0, _verticesNumber);
-		// glDrawArrays(GL_TRIANGLES, 0, _verticesNumber);
-		glDrawElements(GL_TRIANGLES, _indicesNumber, GL_UNSIGNED_INT, 0);
+		glDrawArrays(GL_POINTS, 0, _triangles.size() * 3);
+		// glDrawArrays(GL_TRIANGLES, 0, _triangles.size() * 3);
+		// glDrawElements(GL_TRIANGLES, _triangles.size(), GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(_window);
 		glfwPollEvents();
@@ -187,33 +224,6 @@ void Engine::_processInput(GLFWwindow *window) {
 	else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
 		if (_mixValue > 0)
 			_mixValue -= 0.01;
-	}
-}
-
-void Engine::_normalizeVertices() {
-	float minX, maxX, minY, maxY, minZ, maxZ = 0;
-	float deltaX, deltaY, deltaZ = 0;
-
-	if (_verticesNumber > 0) {
-		minX = maxX = _vertices[0];
-		minY = maxY = _vertices[1];
-		minZ = maxZ = _vertices[2];
-	}
-	for (unsigned int i = 1; i < _verticesNumber; i++) {
-		minX = _vertices[i * 3] < minX ? _vertices[i * 3] : minX;
-		maxX = _vertices[i * 3] > maxX ? _vertices[i * 3] : maxX;
-		minY = _vertices[i * 3 + 1] < minY ? _vertices[i * 3 + 1] : minY;
-		maxY = _vertices[i * 3 + 1] > maxY ? _vertices[i * 3 + 1] : maxY;
-		minZ = _vertices[i * 3 + 2] < minZ ? _vertices[i * 3 + 2] : minZ;
-		maxZ = _vertices[i * 3 + 2] > maxZ ? _vertices[i * 3 + 2] : maxZ;
-	}
-	deltaX = maxX - minX;
-	deltaY = maxY - minY;
-	deltaZ = maxZ - minZ;
-	for (unsigned int i = 0; i < _verticesNumber * 3; i += 3) {
-		_vertices[i] = (_vertices[i] - minX) / deltaX * 2.0f - 1.0f;
-		_vertices[i + 1] = (_vertices[i + 1] - minY) / deltaY * 2.0f - 1.0f;
-		_vertices[i + 2] = (_vertices[i + 2] - minZ) / deltaZ * 2.0f - 1.0f;
 	}
 }
 
