@@ -28,7 +28,7 @@ class Engine {
 		GLuint _vao;
 		GLuint _vboVertices;
 		GLuint _vboTextures;
-		GLuint _vboNormales;
+		GLuint _vboNormals;
 		GLuint _ebo;
 		Shaders *_shaders;
 		Matrix *_matrix;
@@ -36,9 +36,15 @@ class Engine {
 		unsigned int _texture2;
 		float _mixValue;
 		float *_vertices;
-		unsigned int _verticesNumber;
 		float *_textures;
 		float *_normals;
+		unsigned int *_indices;
+		// /////
+		unsigned int _verticesNumber;
+		unsigned int _texturesNumber;
+		unsigned int _normalsNumber;
+		unsigned int _indicesNumber;
+
 
 		static void _error_callback(int error, const char* description);
 		static void _framebuffer_size_callback(GLFWwindow *window, int width, int height);

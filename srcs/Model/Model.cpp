@@ -76,37 +76,79 @@ std::string Model::getModelName() const {
 }
 
 float *Model::getVertices() const {
-	float *vertices = new float[_vertices.size() * 3];
-	for (unsigned int i = 0; i < _vertices.size(); i++) {
-		vertices[i * 3] = _vertices[i].vertices[0];
-		vertices[i * 3 + 1] =	_vertices[i].vertices[1];
-		vertices[i * 3 + 2] = 	_vertices[i].vertices[2];
+	// float *vertices = new float[_vertices.size() * 3];
+	// for (unsigned int i = 0; i < _vertices.size(); i++) {
+	// 	vertices[i * 3] = _vertices[i].vertices[0];
+	// 	vertices[i * 3 + 1] =	_vertices[i].vertices[1];
+	// 	vertices[i * 3 + 2] = 	_vertices[i].vertices[2];
+	// }
+	float *vertices = new float[_vs.size() * 3];
+	for (unsigned int i = 0; i < _vs.size(); i++) {
+		vertices[i * 3] = _vs[i][0];
+		vertices[i * 3 + 1] =	_vs[i][1];
+		vertices[i * 3 + 2] = 	_vs[i][2];
 	}
 	return vertices;
 }
 
 float *Model::getTextures() const {
-	float *textures = new float[_vertices.size() * 2];
-	for (unsigned int i = 0; i < _vertices.size(); i++) {
-		textures[i * 2] = _vertices[i].textures[0];
-		textures[i * 2 + 1] =	_vertices[i].textures[1];
+	// float *textures = new float[_vertices.size() * 2];
+	// for (unsigned int i = 0; i < _vertices.size(); i++) {
+	// 	textures[i * 2] = _vertices[i].textures[0];
+	// 	textures[i * 2 + 1] =	_vertices[i].textures[1];
+	// }
+	float *textures = new float[_vts.size() * 2];
+	for (unsigned int i = 0; i < _vts.size(); i++) {
+		textures[i * 2] = _vts[i][0];
+		textures[i * 2 + 1] =	_vts[i][1];
 	}
 	return textures;
 }
 
 float *Model::getNormals() const {
-	float *normals = new float[_vertices.size() * 3];
-	for (unsigned int i = 0; i < _vertices.size(); i++) {
-		normals[i * 3] = _vertices[i].normals[0];
-		normals[i * 3 + 1] =_vertices[i].normals[1];
-		normals[i * 3 + 2] = _vertices[i].normals[2];
+	// float *normals = new float[_vertices.size() * 3];
+	// for (unsigned int i = 0; i < _vertices.size(); i++) {
+	// 	normals[i * 3] = _vertices[i].normals[0];
+	// 	normals[i * 3 + 1] =_vertices[i].normals[1];
+	// 	normals[i * 3 + 2] = _vertices[i].normals[2];
+	// }
+	float *normals = new float[_vns.size() * 3];
+	for (unsigned int i = 0; i < _vns.size(); i++) {
+		normals[i * 3] = _vns[i][0];
+		normals[i * 3 + 1] =_vns[i][1];
+		normals[i * 3 + 2] = _vns[i][2];
 	}
 	return normals;
 }
 
-unsigned int Model::getVerticesNumber() const {
-	return _vertices.size();
+unsigned int *Model::getIndices() const {
+	unsigned int *indices = new unsigned int[_indices.size() * 3];
+	for (unsigned int i = 0; i < _indices.size(); i++) {
+		indices[i] = _indices[i];
+	}
+	return indices;
 }
+
+unsigned int Model::getVerticesSize() const {
+	return _vs.size();
+}
+
+unsigned int Model::getTexturesSize() const {
+	return _vts.size();
+}
+
+unsigned int Model::getNormalsSize() const {
+	return _vns.size();
+}
+
+unsigned int Model::getIndicesSize() const {
+	return _indices.size();
+}
+
+
+// unsigned int Model::getVerticesNumber() const {
+// 	return _vertices.size();
+// }
 
 facesType Model::_getFacesType(const std::string &line) {
 	unsigned int slashCount = std::count(line.begin(), line.end(), '/');
@@ -156,10 +198,11 @@ void Model::_parseFaces(const std::string &line, unsigned int i) {
 		}
 		for (unsigned int i = 0; i < faces.size(); i++) {
 			Vertex vertex;
-			vertex.vertices = _vs[faces[i][0] - 1];
-			vertex.textures = _vts[faces[i][1] - 1];
-			vertex.normals = _vns[faces[i][2] - 1];
-			_vertices.push_back(vertex);
+			// vertex.vertices = _vs[faces[i][0] - 1];
+			// vertex.textures = _vts[faces[i][1] - 1];
+			// vertex.normals = _vns[faces[i][2] - 1];
+			// _vertices.push_back(vertex);
+			_indices.push_back(faces[i][0] - 1);
 		}
 	}
 }

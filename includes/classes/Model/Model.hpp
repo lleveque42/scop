@@ -38,6 +38,7 @@ class Model {
 		std::vector<Vector2<float>> _vts;
 		std::vector<Vector3<float>> _vns;
 		std::vector<Vertex> _vertices;
+		std::vector<unsigned int> _indices;
 		facesType _facesType;
 
 		facesType _getFacesType(const std::string &line);
@@ -51,7 +52,12 @@ class Model {
 		std::ifstream *getModelFile() const;
 		std::string getModelName() const;
 		float *getVertices() const;
+		unsigned int getVerticesSize() const;
 		float *getTextures() const;
+		unsigned int getTexturesSize() const;
 		float *getNormals() const;
-		unsigned int getVerticesNumber() const;
+		unsigned int getNormalsSize() const;
+		unsigned int *getIndices() const;
+		unsigned int getIndicesSize() const;
+		// unsigned int getVerticesNumber() const;
 };

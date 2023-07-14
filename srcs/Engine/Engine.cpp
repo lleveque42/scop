@@ -1,8 +1,8 @@
 #include "Engine.hpp"
 
 Engine::Engine() : _window(nullptr), _vao(0), _vboVertices(0), _vboTextures(0),
-_vboNormales(0), _ebo(0), _shaders(nullptr), _texture1(0), _mixValue(0),
-_vertices(nullptr), _textures(nullptr), _normals(nullptr)
+_vboNormals(0), _ebo(0), _shaders(nullptr), _texture1(0), _mixValue(0),
+_vertices(nullptr), _textures(nullptr), _normals(nullptr), _indices(nullptr)
 {
 	if (!glfwInit())
 		throw ERR_GLFW_INIT;
@@ -52,7 +52,12 @@ void Engine::loadModel(Model *model) {
 	_vertices = model->getVertices();
 	_textures = model->getTextures();
 	_normals = model->getNormals();
-	_verticesNumber = model->getVerticesNumber();
+	_indices = model->getIndices();
+	_verticesNumber = model->getVerticesSize();
+	_texturesNumber = model->getTexturesSize();
+	_normalsNumber = model->getNormalsSize();
+	_indicesNumber = model->getIndicesSize();
+	// _verticesNumber = model->getVerticesNumber();
 	_normalizeVertices();
 }
 
@@ -99,31 +104,36 @@ void Engine::render() {
 	std::cout << _verticesNumber << std::endl;
 	for (unsigned int i = 0; i < _verticesNumber * 3; i += 3)
 		std::cout << "v " << _vertices[i] << " " << _vertices[i + 1] << " " << _vertices[i + 2] << std::endl;
-	std::cout << _verticesNumber << std::endl;
-	for (unsigned int i = 0; i < _verticesNumber * 2; i += 2)
+	std::cout << _texturesNumber << std::endl;
+	for (unsigned int i = 0; i < _texturesNumber * 2; i += 2)
 		std::cout << " vt " << _textures[i] << " " << _textures[i + 1] << std::endl;
-	std::cout << _verticesNumber << std::endl;
-	for (unsigned int i = 0; i < _verticesNumber * 3; i += 3)
-		std::cout << "v " << _normals[i] << " " << _normals[i + 1] << " " << _normals[i + 2] << std::endl;
+	std::cout << _normalsNumber << std::endl;
+	for (unsigned int i = 0; i < _normalsNumber * 3; i += 3)
+		std::cout << "n " << _normals[i] << " " << _normals[i + 1] << " " << _normals[i + 2] << std::endl;
+	std::cout << _indicesNumber << std::endl;
+	for (unsigned int i = 0; i < _indicesNumber; i += 3)
+		std::cout << " f " << _indices[i] << " " << _indices[i + 1] << " " << _indices[i + 2] << std::endl;
 
 	glGenVertexArrays(1, &_vao);
 	glGenBuffers(1, &_vboVertices);
 	glGenBuffers(1, &_vboTextures);
-	glGenBuffers(1, &_vboNormales);
-	// glGenBuffers(1, &_ebo);
+	glGenBuffers(1, &_vboNormals);
+	glGenBuffers(1, &_ebo);
 	glBindVertexArray(_vao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, _vboVertices);
-	glBufferData(GL_ARRAY_BUFFER, _verticesNumber * sizeof(float), _vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, _verticesNumber * sizeof(float) * 3, _vertices, GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ARRAY_BUFFER, _vboTextures);
-	glBufferData(GL_ARRAY_BUFFER, _verticesNumber * sizeof(float), _textures, GL_STATIC_DRAW);
+	// glBufferData(GL_ARRAY_BUFFER, _verticesNumber * sizeof(float), _textures, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, _texturesNumber * sizeof(float) * 2, _textures, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ARRAY_BUFFER, _vboNormales);
-	glBufferData(GL_ARRAY_BUFFER, _verticesNumber * sizeof(float), _normals, GL_STATIC_DRAW);
+	// glBindBuffer(GL_ARRAY_BUFFER, _vboNormals);
+	// glBufferData(GL_ARRAY_BUFFER, _verticesNumber * sizeof(float), _normals, GL_STATIC_DRAW);
+	// glBufferData(GL_ARRAY_BUFFER, _normalsNumber * sizeof(float) * 3, _normals, GL_STATIC_DRAW);
 
-	// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-	// glBufferData(GL_ELEMENT_ARRAY_BUFFER, _facesSize * sizeof(unsigned int) * 3, _faces, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indicesNumber * sizeof(unsigned int), _indices, GL_STATIC_DRAW);
 
 	// for positions coordinates
 	glEnableVertexAttribArray(0);
@@ -135,7 +145,7 @@ void Engine::render() {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
 
 	glEnableVertexAttribArray(2);
-	glBindBuffer(GL_ARRAY_BUFFER, _vboNormales);
+	glBindBuffer(GL_ARRAY_BUFFER, _vboNormals);
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
 	_matrix->rotateY(-M_PI / 2);
@@ -159,8 +169,8 @@ void Engine::render() {
 		glPointSize(7.0f);
 		glBindVertexArray(_vao);
 		glDrawArrays(GL_POINTS, 0, _verticesNumber);
-		glDrawArrays(GL_TRIANGLES, 0, _verticesNumber);
-		// glDrawElements(GL_TRIANGLES, _verticesNumber, GL_UNSIGNED_INT, 0);
+		// glDrawArrays(GL_TRIANGLES, 0, _verticesNumber);
+		glDrawElements(GL_TRIANGLES, _indicesNumber, GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(_window);
 		glfwPollEvents();
@@ -211,7 +221,7 @@ void Engine::_clearShaders() {
 	if (_vao) glDeleteVertexArrays(1, &_vao);
 	if (_vboVertices) glDeleteBuffers(1, &_vboVertices);
 	if (_vboTextures) glDeleteBuffers(1, &_vboTextures);
-	if (_vboNormales) glDeleteBuffers(1, &_vboNormales);
+	if (_vboNormals) glDeleteBuffers(1, &_vboNormals);
 	if (_ebo) glDeleteBuffers(1, &_ebo);
 }
 
