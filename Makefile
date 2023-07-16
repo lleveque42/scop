@@ -14,7 +14,11 @@ CXX := g++
 CXXFLAGS := -Wall -Wextra -Werror -pedantic -std=c++11 -MMD
 CXXINCLUDES := -I$(DIR_GLFW)/include/ -I$(DIR_GLEW)/include/ -I$(DIR_STB)/include/ $(shell bash ./scripts/generate_includes.sh)
 
-CXXDEPENDENCIES := -L$(DIR_GLFW)/lib -lglfw3 -L$(DIR_GLEW)/lib -lGLEW -lGL -lX11
+ifeq ($(UNAME), Linux)
+CXXDEPENDENCIES := -L$(DIR_GLFW)/lib/Linux -lglfw3 -L$(DIR_GLEW)/lib/Linux -lGLEW -lGL -lX11
+else ifeq ($(UNAME), Darwin)
+CXXDEPENDENCIES := -L$(DIR_GLFW)/lib/Darwin -lglfw3 -L$(DIR_GLEW)/lib/Darwin -lGLEW -framework OpenGL -framework Cocoa -framework IOKit
+endif
 
 MKDIR := mkdir -p
 RM := rm -rf
@@ -29,6 +33,29 @@ LINKING := $(GREEN)Linking$(NC)
 REMOVING := $(RED)Removing$(NC)
 
 ifeq ($(UNAME), Linux)
+all: $(NAME)
+
+$(NAME): $(OBJS)
+	@echo "$(LINKING) scop..."
+	@$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(CXXDEPENDENCIES)
+
+$(DIR_OBJS)/%.o : $(DIR_SRCS)/%.cpp
+	@$(MKDIR) $(dir $@)
+	@echo "$(COMPILING) $<..."
+	@$(CXX) $(CXXFLAGS) -c $< -o $@ $(CXXINCLUDES)
+
+-include $(OBJS:.o=.d)
+
+clean:
+	@echo "$(REMOVING) objects..."
+	@$(RM) $(OBJS) $(DIR_OBJS)
+
+fclean: clean
+	@echo "$(REMOVING) executable..."
+	@$(RM) $(NAME)
+
+re: fclean all
+else ifeq ($(UNAME), Darwin)
 all: $(NAME)
 
 $(NAME): $(OBJS)

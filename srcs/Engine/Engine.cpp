@@ -29,7 +29,11 @@ void Engine::initialize(const std::string &modelName) {
 	glfwSetErrorCallback(_error_callback);
 	glfwWindowHint(GLFW_SAMPLES, 4); // anti-aliasing
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // OpenGl v3
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); // OpenGl v3.3
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2); // OpenGl v3.3
+	// macos
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	//
 	_window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, title.c_str(), NULL, NULL);
 	if (!_window) {
 		glfwTerminate();

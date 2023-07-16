@@ -16,8 +16,10 @@
 #define ERR_CREATE_WIN std::invalid_argument("could not create window (OpenGL version may be too old).")
 #define ERR_LOADING_TEXTURE std::invalid_argument("could not load texture (file may be missing).")
 
-#define DEFAULT_TEXTURE1_PATH "./resources/container.jpg"
-#define DEFAULT_TEXTURE2_PATH "./resources/awesomeface.png"
+// #define DEFAULT_TEXTURE1_PATH "./resources/container.jpg"
+#define DEFAULT_TEXTURE1_PATH "/Users/lleveque/Documents/42cursus/scop/resources/container.jpg"
+// #define DEFAULT_TEXTURE2_PATH "./resources/awesomeface.png"
+#define DEFAULT_TEXTURE2_PATH "/Users/lleveque/Documents/42cursus/scop/resources/awesomeface.png"
 
 #define WIN_WIDTH 640
 #define WIN_HEIGHT 480
