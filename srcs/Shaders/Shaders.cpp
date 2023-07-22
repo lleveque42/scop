@@ -1,5 +1,9 @@
 #include "Shaders.hpp"
 
+const std::string workingDir = utils::getWorkingDirectory();
+const std::string Shaders::_vertexShaderPath = workingDir + "/shaders/shader.vert";
+const std::string Shaders::_fragmentShaderPath = workingDir + "/shaders/shader.frag";
+
 Shaders::Shaders() : _shaderProgram(0) {}
 
 Shaders::~Shaders() {
@@ -8,14 +12,14 @@ Shaders::~Shaders() {
 }
 
 void Shaders::load() {
-	std::ifstream vertexShaderFile(vertexShaderPath);
-	std::ifstream fragmentShaderFile(fragmentShaderPath);
+	std::ifstream vertexShaderFile(_vertexShaderPath);
+	std::ifstream fragmentShaderFile(_fragmentShaderPath);
 	std::stringstream vertexShaderStream, fragmentShaderStream;
 
 	if (!vertexShaderFile.is_open())
-		throw ERR_SHADER_NOT_FOUND(vertexShaderPath);
+		throw ERR_SHADER_NOT_FOUND(_vertexShaderPath);
 	if (!fragmentShaderFile.is_open())
-		throw ERR_SHADER_NOT_FOUND(fragmentShaderPath);
+		throw ERR_SHADER_NOT_FOUND(_fragmentShaderPath);
 	try {
 		vertexShaderStream << vertexShaderFile.rdbuf();
 		fragmentShaderStream << fragmentShaderFile.rdbuf();

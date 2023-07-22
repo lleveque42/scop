@@ -1,5 +1,9 @@
 #include "Engine.hpp"
 
+const std::string workingDir = utils::getWorkingDirectory();
+const std::string Engine::_defaultTexture1Path = workingDir + "/resources/container.jpg";
+const std::string Engine::_defaultTexture2Path = workingDir + "/resources/awesomeface.png";
+
 Engine::Engine() : _window(nullptr), _vao(0), _vboVertices(0), _vboTextures(0),
 _vboNormals(0), _ebo(0), _shaders(nullptr), _texture1(0), _mixValue(0)
 {
@@ -124,7 +128,7 @@ void Engine::loadTexture() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	textureData = stbi_load(DEFAULT_TEXTURE1_PATH, &width, &height, &nbrChannels, 0);
+	textureData = stbi_load(_defaultTexture1Path.c_str(), &width, &height, &nbrChannels, 0);
 	if (!textureData)
 		throw ERR_LOADING_TEXTURE;
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, textureData);
@@ -137,7 +141,7 @@ void Engine::loadTexture() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	textureData = stbi_load(DEFAULT_TEXTURE2_PATH, &width, &height, &nbrChannels, 0);
+	textureData = stbi_load(_defaultTexture2Path.c_str(), &width, &height, &nbrChannels, 0);
 	if (!textureData)
 		throw ERR_LOADING_TEXTURE;
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData);

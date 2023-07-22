@@ -5,10 +5,7 @@
 #include <cstring>
 #include <GL/glew.h>
 
-// #define vertexShaderPath "/shaders/shader.vert"
-#define vertexShaderPath "/Users/lleveque/Documents/42cursus/scop/shaders/shader.vert"
-// #define fragmentShaderPath "./shaders/shader.frag"
-#define fragmentShaderPath "/Users/lleveque/Documents/42cursus/scop/shaders/shader.frag"
+#include "utils.hpp"
 
 #define ERR_SHADER_NOT_FOUND(filePath) std::invalid_argument("Shader file " + std::string(filePath) +  " not found.\nExiting...");
 #define ERR_READING_SHADERS std::invalid_argument("reading shaders source failed.")
@@ -20,7 +17,9 @@ class Shaders
 	private:
 		GLuint _shaderProgram;
 		std::string _vertexShaderSource;
+		static const std::string _vertexShaderPath;
 		std::string _fragmentShaderSource;
+		static const std::string _fragmentShaderPath;
 
 	public:
 		Shaders();
