@@ -1,5 +1,6 @@
 NAME := scop
-UNAME := ${shell uname}
+UNAME := $(shell uname)
+ARCH := $(shell uname -m)
 
 DIR_SRCS := srcs
 DIR_OBJS := bin
@@ -17,7 +18,13 @@ CXXINCLUDES := -I$(DIR_GLFW)/include/ -I$(DIR_GLEW)/include/ -I$(DIR_STB)/includ
 ifeq ($(UNAME), Linux)
 CXXDEPENDENCIES := -L$(DIR_GLFW)/lib/Linux -lglfw3 -L$(DIR_GLEW)/lib/Linux -lGLEW -lGL -lX11
 else ifeq ($(UNAME), Darwin)
+ifeq ($(ARCH), arm64)
 CXXDEPENDENCIES := -L$(DIR_GLFW)/lib/Darwin -lglfw3 -L$(DIR_GLEW)/lib/Darwin -lGLEW -framework OpenGL -framework Cocoa -framework IOKit
+else
+$(error Unsupported architecture: ${ARCH}, scop only supports arm64 on macOs.)
+endif
+else
+$(error Unsupported os: ${UNAME}, scop only supports Linux)
 endif
 
 MKDIR := mkdir -p
@@ -32,7 +39,6 @@ COMPILING := $(CYAN)Compiling$(NC)
 LINKING := $(GREEN)Linking$(NC)
 REMOVING := $(RED)Removing$(NC)
 
-ifeq ($(UNAME), Linux)
 all: $(NAME)
 
 $(NAME): $(OBJS)
@@ -55,31 +61,11 @@ fclean: clean
 	@$(RM) $(NAME)
 
 re: fclean all
-else ifeq ($(UNAME), Darwin)
-all: $(NAME)
-
-$(NAME): $(OBJS)
-	@echo "$(LINKING) scop..."
-	@$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(CXXDEPENDENCIES)
-
-$(DIR_OBJS)/%.o : $(DIR_SRCS)/%.cpp
-	@$(MKDIR) $(dir $@)
-	@echo "$(COMPILING) $<..."
-	@$(CXX) $(CXXFLAGS) -c $< -o $@ $(CXXINCLUDES)
-
--include $(OBJS:.o=.d)
-
-clean:
-	@echo "$(REMOVING) objects..."
-	@$(RM) $(OBJS) $(DIR_OBJS)
-
-fclean: clean
-	@echo "$(REMOVING) executable..."
-	@$(RM) $(NAME)
-
-re: fclean all
-else
-$(error Unsupported os: ${UNAME}, scop only supports Linux)
-endif
 
 .PHONY: all clean fclean re
+
+
+
+
+
+
