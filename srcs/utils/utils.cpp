@@ -1,9 +1,5 @@
-#include <fstream>
-#include <sstream>
-
 #include "scop.hpp"
 #include "utils.hpp"
-
 
 void utils::checkArg(int ac, char **av) {
 	std::ifstream obj_file;
@@ -35,3 +31,10 @@ std::vector<std::string> utils::split(const std::string &str, const char delimit
 	return tokens;
 }
 
+std::string utils::getWorkingDirectory() {
+	char buffer[PATH_MAX];
+
+	if (getcwd(buffer, sizeof(buffer)) != nullptr)
+		return std::string(buffer);
+	return "";
+}
