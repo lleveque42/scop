@@ -9,16 +9,18 @@
 class Matrix {
 	private:
 		float *_matrix;
-		float *_identity();
+		float *_scaleMatrix;
+		float *_rotationMatrix;
 		void _multiply(const float *og, const float *trans);
+		float *_identity();
 
 	public:
 		Matrix();
 		~Matrix();
-		void rotateX(float angle);
-		void rotateY(float angle);
-		void rotateZ(float angle);
-		void scale(float scale);
+		void rotateX(const float angle);
+		void rotateY(const float angle);
+		void rotateZ(const float angle);
+		void scale(const float scale);
 		float *getMat4();
 
 		friend std::ostream &operator<<(std::ostream &os, const Matrix &m) {

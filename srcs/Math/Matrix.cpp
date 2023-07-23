@@ -1,11 +1,11 @@
 #include "Matrix.hpp"
 
-Matrix::Matrix() : _matrix(nullptr) {
-	_matrix = _identity();
-}
+Matrix::Matrix() : _matrix(_identity()), _scaleMatrix(_identity()), _rotationMatrix(_identity()) {}
 
 Matrix::~Matrix() {
 	delete[] _matrix;
+	delete[] _scaleMatrix;
+	delete[] _rotationMatrix;
 }
 
 void Matrix::rotateX(const float angle) {
@@ -14,37 +14,38 @@ void Matrix::rotateX(const float angle) {
 	rotationMatrix[6] = -sinf(angle);
 	rotationMatrix[9] = sinf(angle);
 	rotationMatrix[10] = -cosf(angle);
-	_multiply(_matrix, rotationMatrix);
-	delete[] rotationMatrix;
+	delete[] _rotationMatrix;
+	_multiply(rotationMatrix, _scaleMatrix);
+	_rotationMatrix = rotationMatrix;
 }
 
-void Matrix::rotateY(float angle) {
+void Matrix::rotateY(const float angle) {
 	float *rotationMatrix = _identity();
 	rotationMatrix[0] = cosf(angle);
 	rotationMatrix[2] = sinf(angle);
 	rotationMatrix[8] = -sinf(angle);
 	rotationMatrix[10] = -cosf(angle);
-	_multiply(_matrix, rotationMatrix);
-	delete[] rotationMatrix;
+	delete[] _rotationMatrix;
+	_multiply(rotationMatrix, _scaleMatrix);
+	_rotationMatrix = rotationMatrix;
 }
 
-void Matrix::rotateZ(float angle) {
+void Matrix::rotateZ(const float angle) {
 	float *rotationMatrix = _identity();
 	rotationMatrix[0] = cosf(angle);
 	rotationMatrix[1] = -sinf(angle);
 	rotationMatrix[4] = sinf(angle);
 	rotationMatrix[5] = -cosf(angle);
-	_multiply(_matrix, rotationMatrix);
-	delete[] rotationMatrix;
+	_multiply(rotationMatrix, _scaleMatrix);
+	delete[] _rotationMatrix;
+	_rotationMatrix = rotationMatrix;
 }
 
-void Matrix::scale(float scale) {
-	float *scaleMatrix = _identity();
-	scaleMatrix[0] = scale;
-	scaleMatrix[5] = scale;
-	scaleMatrix[10] = scale;
-	_multiply(_matrix, scaleMatrix);
-	delete[] scaleMatrix;
+void Matrix::scale(const float scale) {
+	_scaleMatrix[0] = scale;
+	_scaleMatrix[5] = scale;
+	_scaleMatrix[10] = scale;
+	_multiply(_rotationMatrix, _scaleMatrix);
 }
 
 float *Matrix::getMat4() {
@@ -58,24 +59,16 @@ float *Matrix::_identity() {
 	return identity;
 }
 
-void Matrix::_multiply(const float *og, const float *trans) {
+void Matrix::_multiply(const float *trans, const float *og) {
 	float *product = new float[16];
-	product[0] = og[0] * trans[0] + og[4] * trans[1] + og[8] * trans[2] + og[12] * trans[3];
-	product[1] = og[1] * trans[0] + og[5] * trans[1] + og[9] * trans[2] + og[13] * trans[3];
-	product[2] = og[2] * trans[0] + og[6] * trans[1] + og[10] * trans[2] + og[14] * trans[3];
-	product[3] = og[3] * trans[0] + og[7] * trans[1] + og[11] * trans[2] + og[15] * trans[3];
-	product[4] = og[0] * trans[4] + og[4] * trans[5] + og[8] * trans[6] + og[12] * trans[7];
-	product[5] = og[1] * trans[4] + og[5] * trans[5] + og[9] * trans[6] + og[13] * trans[7];
-	product[6] = og[2] * trans[4] + og[6] * trans[5] + og[10] * trans[6] + og[14] * trans[7];
-	product[7] = og[3] * trans[4] + og[7] * trans[5] + og[11] * trans[6] + og[15] * trans[7];
-	product[8] = og[0] * trans[8] + og[4] * trans[9] + og[8] * trans[10] + og[12] * trans[11];
-	product[9] = og[1] * trans[8] + og[5] * trans[9] + og[9] * trans[10] + og[13] * trans[11];
-	product[10] = og[2] * trans[8] + og[6] * trans[9] + og[10] * trans[10] + og[14] * trans[11];
-	product[11] = og[3] * trans[8] + og[7] * trans[9] + og[11] * trans[10] + og[15] * trans[11];
-	product[12] = og[0] * trans[12] + og[4] * trans[13] + og[8] * trans[14] + og[12] * trans[15];
-	product[13] = og[1] * trans[12] + og[5] * trans[13] + og[9] * trans[14] + og[13] * trans[15];
-	product[14] = og[2] * trans[12] + og[6] * trans[13] + og[10] * trans[14] + og[14] * trans[15];
-	product[15] = og[3] * trans[12] + og[7] * trans[13] + og[11] * trans[14] + og[15] * trans[15];
+
+	for (unsigned int i = 0; i < 4; i++) {
+		for (unsigned int j = 0; j < 4; j++) {
+			product[i * 4 + j] = 0;
+			for (unsigned int k = 0; k < 4; k++)
+				product[i * 4 + j] += trans[i * 4 + k] * og[k * 4 + j];
+		}
+	}
 	delete[] _matrix;
 	_matrix = product;
 }
