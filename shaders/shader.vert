@@ -10,8 +10,7 @@ out vec3 Normal;
 uniform mat4 transform;
 
 void main() {
-	mat4 test = mat4(vec4(0, 0, 0.5, 0), vec4(0, 0.5, 0, 0), vec4(-0.5, 0, 0, 0), vec4(0, 0, 0, 1));
-	gl_Position = test * vec4(aVertex, 1.0f);
+	gl_Position = transform * vec4(aVertex.x, aVertex.y, aVertex.z, 1.0f);
 	Texture = aTexture;
 	Normal = aNormal;
 }

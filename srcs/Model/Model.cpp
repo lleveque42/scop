@@ -187,9 +187,9 @@ void Model::_parseFaces(const std::string &line, unsigned int i) {
 			if (slashLine.size() != 3)
 				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
 			try {
-				face.verticesIndices[i - 1] = std::stoul(slashLine[0]) - 1;
-				face.texturesIndices[i - 1] = std::stoul(slashLine[1]) - 1;
-				face.normalsIndices[i - 1] = std::stoul(slashLine[2]) - 1;
+				face.verticesIndices[i - 1] = std::stoul(slashLine[0]);
+				face.texturesIndices[i - 1] = std::stoul(slashLine[1]);
+				face.normalsIndices[i - 1] = std::stoul(slashLine[2]);
 			} catch(std::exception &e) {
 				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
 			}
@@ -199,28 +199,28 @@ void Model::_parseFaces(const std::string &line, unsigned int i) {
 }
 
 void Model::_normalizeVertices() {
-	float minX, maxX, minY, maxY, minZ, maxZ = 0;
-	float deltaX, deltaY, deltaZ = 0;
+	// float minX, maxX, minY, maxY, minZ, maxZ = 0;
+	// float deltaX, deltaY, deltaZ = 0;
 
-	if (_vertices.size() > 0) {
-		minX = maxX = _vertices[0].x;
-		minY = maxY = _vertices[0].y;
-		minZ = maxZ = _vertices[0].z;
-	}
-	for (unsigned int i = 1; i < _vertices.size(); i++) {
-		minX = _vertices[i].x < minX ? _vertices[i].x : minX;
-		maxX = _vertices[i].x > maxX ? _vertices[i].x : maxX;
-		minY = _vertices[i].y < minY ? _vertices[i].y : minY;
-		maxY = _vertices[i].y > maxY ? _vertices[i].y : maxY;
-		minZ = _vertices[i].z < minZ ? _vertices[i].z : minZ;
-		maxZ = _vertices[i].z > maxZ ? _vertices[i].z : maxZ;
-	}
-	deltaX = maxX - minX;
-	deltaY = maxY - minY;
-	deltaZ = maxZ - minZ;
-	for (Vertex &vertice : _vertices) {
-		vertice.x = (vertice.x - minX) / deltaX * 2.0f - 1.0f;
-		vertice.y = (vertice.y - minY) / deltaY * 2.0f - 1.0f;
-		vertice.z = (vertice.z - minZ) / deltaZ * 2.0f - 1.0f;
-	}
+	// if (_vertices.size() > 0) {
+	// 	minX = maxX = _vertices[0].x;
+	// 	minY = maxY = _vertices[0].y;
+	// 	minZ = maxZ = _vertices[0].z;
+	// }
+	// for (unsigned int i = 1; i < _vertices.size(); i++) {
+	// 	minX = _vertices[i].x < minX ? _vertices[i].x : minX;
+	// 	maxX = _vertices[i].x > maxX ? _vertices[i].x : maxX;
+	// 	minY = _vertices[i].y < minY ? _vertices[i].y : minY;
+	// 	maxY = _vertices[i].y > maxY ? _vertices[i].y : maxY;
+	// 	minZ = _vertices[i].z < minZ ? _vertices[i].z : minZ;
+	// 	maxZ = _vertices[i].z > maxZ ? _vertices[i].z : maxZ;
+	// }
+	// deltaX = maxX - minX;
+	// deltaY = maxY - minY;
+	// deltaZ = maxZ - minZ;
+	// for (Vertex &vertice : _vertices) {
+	// 	vertice.x = (vertice.x - minX) / deltaX * 2.0f - 1.0f;
+	// 	vertice.y = (vertice.y - minY) / deltaY * 2.0f - 1.0f;
+	// 	vertice.z = (vertice.z - minZ) / deltaZ * 2.0f - 1.0f;
+	// }
 }

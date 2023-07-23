@@ -36,18 +36,11 @@ class Engine {
 		unsigned int _texture2;
 		static const std::string _defaultTexture2Path;
 		float _mixValue;
-		std::vector<Triangle> _triangles;
+		float _scale;
+		std::vector<Vertex> _vertices;
+		std::vector<Texture> _textures;
+		std::vector<Normal> _normals;
 		std::vector<unsigned int> _indices;
-		// float *_vertices;
-		// float *_textures;
-		// float *_normals;
-		// unsigned int *_indices;
-		// // /////
-		// unsigned int _verticesNumber;
-		// unsigned int _texturesNumber;
-		// unsigned int _normalsNumber;
-		// unsigned int _indicesNumber;
-
 
 		static void _error_callback(int error, const char* description);
 		static void _framebuffer_size_callback(GLFWwindow *window, int width, int height);
