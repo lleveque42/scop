@@ -2,7 +2,9 @@
 
 #include <fstream>
 #include <sstream>
+#include <vector>
 #include <unistd.h>
+#include <limits.h>
 
 namespace utils {
 	void checkArg(int ac, char **av);
