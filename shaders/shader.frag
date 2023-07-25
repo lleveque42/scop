@@ -10,9 +10,11 @@ uniform sampler2D texture1;
 uniform sampler2D texture2;
 
 void main() {
-    vec4 texColor1 = texture(texture1, vec2(Texture.x, Texture.y));
-    vec4 texColor2 = texture(texture2, vec2(Texture.x, Texture.y));
-    // FragColor = mix(texColor1, texColor2, mixValue);
-    FragColor = mix(vec4(1.0, 0, 0, 1.0), vec4(0, 1.0, 0, 1.0), mixValue);;
-    // Utilisez la Normal pour d'autres calculs de lumière, ombre, etc.
+    vec4 texColor1 = texture(texture1, Texture);
+    vec4 texColor2 = texture(texture2, Texture);
+
+    // Mélanger les couleurs des textures en fonction de mixValue
+    FragColor = mix(texColor1, vec4(0, 1.0, 0, 1.0), mixValue);
+    // FragColor = texColor1;
+    // FragColor = mix(vec4(1.0, 0, 0, 1.0), vec4(0, 1.0, 0, 1.0), mixValue);;
 }

@@ -40,6 +40,7 @@ class Engine {
 		std::vector<Vertex> _vertices;
 		std::vector<Texture> _textures;
 		std::vector<Normal> _normals;
+		std::vector<Triangle> _triangles;
 		std::vector<unsigned int> _indices;
 
 		static void _error_callback(int error, const char* description);
