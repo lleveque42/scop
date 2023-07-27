@@ -1,11 +1,10 @@
 #include "Engine.hpp"
 
 const std::string workingDir = utils::getWorkingDirectory();
-const std::string Engine::_defaultTexture1Path = workingDir + TEXTURE1_PATH;
-const std::string Engine::_defaultTexture2Path = workingDir + TEXTURE2_PATH;
+const std::string Engine::_defaultTexturePath = workingDir + TEXTURE_PATH;
 
 Engine::Engine() : _window(nullptr), _vao(0), _vboVertices(0), _vboTextures(0),
-_vboNormals(0), _ebo(0), _shaders(nullptr), _texture1(0), _mixValue(0), _scale(1.0f),
+_vboNormals(0), _ebo(0), _shaders(nullptr), _texture(0), _mixValue(0), _scale(1.0f),
 _translateX(0), _translateY(0), _translateZ(-3.0f)
 {
 	if (!glfwInit())
@@ -83,34 +82,13 @@ void Engine::loadTexture() {
 	int nbrChannels = 0;
 	stbi_uc *textureData = nullptr;
 
-	textureData = stbi_load(_defaultTexture1Path.c_str(), &width, &height, &nbrChannels, 0);
+	textureData = stbi_load(_defaultTexturePath.c_str(), &width, &height, &nbrChannels, 0);
 	if (!textureData)
 		throw ERR_LOADING_TEXTURE;
 
 	stbi_set_flip_vertically_on_load(true);
-	glGenTextures(1, &_texture1);
-	glBindTexture(GL_TEXTURE_2D, _texture1);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	if (nbrChannels == 3)
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, textureData);
-	else if (nbrChannels == 4)
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData);
-
-	glGenerateMipmap(GL_TEXTURE_2D);
-	stbi_image_free(textureData);
-
-	//TEXTURE 2////////
-	textureData = stbi_load(_defaultTexture2Path.c_str(), &width, &height, &nbrChannels, 0);
-	if (!textureData)
-		throw ERR_LOADING_TEXTURE;
-
-	glGenTextures(1, &_texture2);
-	glBindTexture(GL_TEXTURE_2D, _texture2);
+	glGenTextures(1, &_texture);
+	glBindTexture(GL_TEXTURE_2D, _texture);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -127,24 +105,10 @@ void Engine::loadTexture() {
 }
 
 void Engine::render() {
-	std::cout << _vertices.size() << std::endl;
-	for (unsigned int i = 0; i < _vertices.size(); i++)
-		std::cout << "v " << _vertices[i].x << " " << _vertices[i].y << " " << _vertices[i].z << std::endl;
-	// std::cout << _textures.size() << std::endl;
-	// for (unsigned int i = 0; i < _textures.size(); i++)
-	// 	std::cout << " vt " << _textures[i].u << " " << _textures[i].v << std::endl;
-	// std::cout << _normals.size() << std::endl;
-	// for (unsigned int i = 0; i < _normals.size(); i++)
-	// 	std::cout << "n " << _normals[i].nx << " " << _normals[i].ny << " " << _normals[i].nz << std::endl;
-	// std::cout << _indices.size() << std::endl;
-	// for (unsigned int i = 0; i < _indices.size(); i += 3)
-	// 	std::cout << " f " << _indices[i] << " " << _indices[i + 1] << " " << _indices[i + 2] << std::endl;
-
 	glGenVertexArrays(1, &_vao);
 	glGenBuffers(1, &_vboVertices);
 	glGenBuffers(1, &_vboTextures);
 	glGenBuffers(1, &_vboNormals);
-	// glGenBuffers(1, &_ebo);
 
 	glBindVertexArray(_vao);
 
@@ -163,14 +127,14 @@ void Engine::render() {
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Normal), 0);
 	glEnableVertexAttribArray(2);
 
-	// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-	// glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.size() * sizeof(unsigned int), &_indices[0], GL_STATIC_DRAW);
-	// glEnable(GL_CULL_FACE);
+	if (_indices.size() > 0) {
+		glGenBuffers(1, &_ebo);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.size() * sizeof(unsigned int), &_indices[0], GL_STATIC_DRAW);
+	}
 
-	_shaders->setInt("texture1", _texture1);
-	_shaders->setInt("texture2", _texture2);
+	_shaders->setInt("texture", _texture);
 
-	// glDisable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -180,12 +144,10 @@ void Engine::render() {
 	_modelMatrix->rotateY(M_PI / 2);
 	_modelMatrix->perspective(M_PI / 4, static_cast<float>(WIN_WIDTH) / static_cast<float>(WIN_HEIGHT), 0.1f, 100.0f);
 
-	std::cout << *_modelMatrix << std::endl;
-
 	while (!glfwWindowShouldClose(_window)) {
 		_processInput(_window);
 
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		_shaders->use();
 		_shaders->setFloat("mixValue", _mixValue);
@@ -195,13 +157,14 @@ void Engine::render() {
 		_shaders->setMat4("projection", _modelMatrix->getProjection());
 		_modelMatrix->rotateY(glfwGetTime());
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, _texture1);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, _texture2);
+		glBindTexture(GL_TEXTURE_2D, _texture);
 		glBindVertexArray(_vao);
 		glPointSize(7.0f);
 		// glDrawArrays(GL_POINTS, 0, _vertices.size());
-		glDrawArrays(GL_TRIANGLES, 0, _vertices.size());
+		if (_indices.size() > 0)
+			glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, 0);
+		else
+			glDrawArrays(GL_TRIANGLES, 0, _vertices.size());
 		glBindVertexArray(0);
 		glfwSwapBuffers(_window);
 		glfwPollEvents();
@@ -225,17 +188,17 @@ void Engine::_processInput(GLFWwindow *window) {
 			_scale -= 0.01;
 		_modelMatrix->scale(_scale);
 	} else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		_translateZ -= 0.01;
+		_translateZ -= 0.025;
 	} else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		_translateZ += 0.01;
+		_translateZ += 0.025;
 	} else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		_translateX -= 0.01;
+		_translateX -= 0.025;
 	} else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		_translateX += 0.01;
-	} else if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS) {
-		_translateY -= 0.01;
+		_translateX += 0.025;
 	} else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-		_translateY += 0.01;
+		_translateY -= 0.025;
+	} else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+		_translateY += 0.025;
 	}
 }
 
@@ -244,7 +207,7 @@ void Engine::_clearShaders() {
 	if (_vboVertices) glDeleteBuffers(1, &_vboVertices);
 	if (_vboTextures) glDeleteBuffers(1, &_vboTextures);
 	if (_vboNormals) glDeleteBuffers(1, &_vboNormals);
-	// if (_ebo) glDeleteBuffers(1, &_ebo);
+	if (_ebo) glDeleteBuffers(1, &_ebo);
 }
 
 void Engine::_error_callback(int error, const char* description) {

@@ -14,7 +14,8 @@ void main() {
     vec4 texColor2 = texture(texture2, Texture);
 
     // Mélanger les couleurs des textures en fonction de mixValue
-    FragColor = mix(texColor1, vec4(0, 1.0, 0, 1.0), mixValue);
-    // FragColor = texColor1;
+    // FragColor = mix(texColor1, texColor2, mixValue);
+    //FragColor = mix(texColor1, vec4(0, 1.0, 0, 1.0), mixValue);
+    FragColor = texColor1;
     // FragColor = mix(vec4(1.0, 0, 0, 1.0), vec4(0, 1.0, 0, 1.0), mixValue);;
 }

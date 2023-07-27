@@ -33,7 +33,6 @@ class Model {
 		std::vector<Texture> _textures;
 		std::vector<Normal> _normals;
 		std::vector<Face> _faces;
-		std::vector<Triangle> _triangles;
 		facesType _facesType;
 
 		facesType _getFacesType(const std::string &line);
