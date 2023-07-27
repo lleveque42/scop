@@ -170,8 +170,11 @@ void Engine::render() {
 	_shaders->setInt("texture1", _texture1);
 	_shaders->setInt("texture2", _texture2);
 
-	// glEnable(GL_CULL_FACE);
+	// glDisable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CW);
 
 	_modelMatrix->scale(_scale);
 	_modelMatrix->rotateY(M_PI / 2);
@@ -184,12 +187,11 @@ void Engine::render() {
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glFrontFace(GL_CCW);
 		_shaders->use();
 		_shaders->setFloat("mixValue", _mixValue);
 		_shaders->setMat4("model", _modelMatrix->getModel());
-		_shaders->setMat4("view", _modelMatrix->getView());
 		_modelMatrix->translate(_translateX, _translateY, _translateZ);
+		_shaders->setMat4("view", _modelMatrix->getView());
 		_shaders->setMat4("projection", _modelMatrix->getProjection());
 		_modelMatrix->rotateY(glfwGetTime());
 		glActiveTexture(GL_TEXTURE0);
