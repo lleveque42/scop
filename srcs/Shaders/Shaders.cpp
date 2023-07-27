@@ -1,8 +1,8 @@
 #include "Shaders.hpp"
 
 const std::string workingDir = utils::getWorkingDirectory();
-const std::string Shaders::_vertexShaderPath = workingDir + "/shaders/shader.vert";
-const std::string Shaders::_fragmentShaderPath = workingDir + "/shaders/shader.frag";
+const std::string Shaders::_vertexShaderPath = workingDir + VERTEX_SHADER_PATH;
+const std::string Shaders::_fragmentShaderPath = workingDir + FRAGMENT_SHADER_PATH;
 
 Shaders::Shaders() : _shaderProgram(0) {}
 
@@ -40,7 +40,6 @@ void Shaders::compile() {
 	const char *vertexShaderSource = _vertexShaderSource.c_str();
 	const char *fragmentShaderSource = _fragmentShaderSource.c_str();
 
-	// compile vertex shader
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
 	glCompileShader(vertexShader);
@@ -51,7 +50,6 @@ void Shaders::compile() {
 		throw ERR_COMPILE_SHADERS(infoLog);
 	}
 
-	// compile fragment shader
 	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
 	glCompileShader(fragmentShader);
@@ -63,7 +61,6 @@ void Shaders::compile() {
 		throw ERR_COMPILE_SHADERS(infoLog);
 	}
 
-	// link shaders so they can share outputs/communicate
 	_shaderProgram = glCreateProgram();
 	glAttachShader(_shaderProgram, vertexShader);
 	glAttachShader(_shaderProgram, fragmentShader);
