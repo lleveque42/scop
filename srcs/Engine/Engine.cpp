@@ -1,16 +1,17 @@
 #include "Engine.hpp"
 
 const std::string workingDir = utils::getWorkingDirectory();
-const std::string Engine::_defaultTexture1Path = workingDir + "/resources/container.jpg";
-const std::string Engine::_defaultTexture2Path = workingDir + "/resources/awesomeface.png";
+const std::string Engine::_defaultTexture1Path = workingDir + TEXTURE1_PATH;
+const std::string Engine::_defaultTexture2Path = workingDir + TEXTURE2_PATH;
 
 Engine::Engine() : _window(nullptr), _vao(0), _vboVertices(0), _vboTextures(0),
-_vboNormals(0), _ebo(0), _shaders(nullptr), _texture1(0), _mixValue(0), _scale(0.5)
+_vboNormals(0), _ebo(0), _shaders(nullptr), _texture1(0), _mixValue(0), _scale(1.0f),
+_translateX(0), _translateY(0), _translateZ(-3.0f)
 {
 	if (!glfwInit())
 		throw ERR_GLFW_INIT;
 	_shaders = new Shaders();
-	_matrix = new Matrix();
+	_modelMatrix = new Matrix();
 }
 
 Engine::~Engine() {
@@ -19,7 +20,7 @@ Engine::~Engine() {
 	_clearShaders();
 	glfwTerminate();
 	delete _shaders;
-	delete _matrix;
+	delete _modelMatrix;
 }
 
 void Engine::initialize(const std::string &modelName) {
@@ -126,12 +127,12 @@ void Engine::loadTexture() {
 }
 
 void Engine::render() {
-	// std::cout << _vertices.size() << std::endl;
-	// for (unsigned int i = 0; i < _vertices.size(); i++)
-	// 	std::cout << "v " << _vertices[i].x << " " << _vertices[i].y << " " << _vertices[i].z << std::endl;
-	std::cout << _textures.size() << std::endl;
-	for (unsigned int i = 0; i < _textures.size(); i++)
-		std::cout << " vt " << _textures[i].u << " " << _textures[i].v << std::endl;
+	std::cout << _vertices.size() << std::endl;
+	for (unsigned int i = 0; i < _vertices.size(); i++)
+		std::cout << "v " << _vertices[i].x << " " << _vertices[i].y << " " << _vertices[i].z << std::endl;
+	// std::cout << _textures.size() << std::endl;
+	// for (unsigned int i = 0; i < _textures.size(); i++)
+	// 	std::cout << " vt " << _textures[i].u << " " << _textures[i].v << std::endl;
 	// std::cout << _normals.size() << std::endl;
 	// for (unsigned int i = 0; i < _normals.size(); i++)
 	// 	std::cout << "n " << _normals[i].nx << " " << _normals[i].ny << " " << _normals[i].nz << std::endl;
@@ -169,26 +170,35 @@ void Engine::render() {
 	_shaders->setInt("texture1", _texture1);
 	_shaders->setInt("texture2", _texture2);
 
-	_matrix->scale(_scale);
-	_matrix->rotateY(M_PI / 2);
+	// glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+
+	_modelMatrix->scale(_scale);
+	_modelMatrix->rotateY(M_PI / 2);
+	_modelMatrix->perspective(M_PI / 4, static_cast<float>(WIN_WIDTH) / static_cast<float>(WIN_HEIGHT), 0.1f, 100.0f);
+
+	std::cout << *_modelMatrix << std::endl;
 
 	while (!glfwWindowShouldClose(_window)) {
 		_processInput(_window);
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glFrontFace(GL_CCW);
 		_shaders->use();
 		_shaders->setFloat("mixValue", _mixValue);
-		_shaders->setMat4("transform", _matrix->getMat4());
-		_matrix->rotateY(glfwGetTime());
+		_shaders->setMat4("model", _modelMatrix->getModel());
+		_shaders->setMat4("view", _modelMatrix->getView());
+		_modelMatrix->translate(_translateX, _translateY, _translateZ);
+		_shaders->setMat4("projection", _modelMatrix->getProjection());
+		_modelMatrix->rotateY(glfwGetTime());
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, _texture1);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, _texture2);
 		glBindVertexArray(_vao);
 		glPointSize(7.0f);
-		glDrawArrays(GL_POINTS, 0, _vertices.size());
+		// glDrawArrays(GL_POINTS, 0, _vertices.size());
 		glDrawArrays(GL_TRIANGLES, 0, _vertices.size());
 		glBindVertexArray(0);
 		glfwSwapBuffers(_window);
@@ -207,11 +217,23 @@ void Engine::_processInput(GLFWwindow *window) {
 			_mixValue -= 0.01;
 	} else if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
 		_scale += 0.01;
-		_matrix->scale(_scale);
+		_modelMatrix->scale(_scale);
 	} else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-		if (_scale > 0)
+		if (_scale - 0.01 > 0)
 			_scale -= 0.01;
-		_matrix->scale(_scale);
+		_modelMatrix->scale(_scale);
+	} else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+		_translateZ -= 0.01;
+	} else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+		_translateZ += 0.01;
+	} else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+		_translateX -= 0.01;
+	} else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+		_translateX += 0.01;
+	} else if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS) {
+		_translateY -= 0.01;
+	} else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+		_translateY += 0.01;
 	}
 }
 

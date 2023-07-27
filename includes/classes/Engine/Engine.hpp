@@ -20,6 +20,9 @@
 #define WIN_HEIGHT 480
 #define WIN_TITLE "Scop"
 
+#define TEXTURE1_PATH "/resources/container.jpg"
+#define TEXTURE2_PATH "/resources/awesomeface.png"
+
 class Engine {
 	private:
 		GLFWwindow *_window;
@@ -30,13 +33,16 @@ class Engine {
 		GLuint _vboNormals;
 		GLuint _ebo;
 		Shaders *_shaders;
-		Matrix *_matrix;
+		Matrix *_modelMatrix;
 		unsigned int _texture1;
 		static const std::string _defaultTexture1Path;
 		unsigned int _texture2;
 		static const std::string _defaultTexture2Path;
 		float _mixValue;
 		float _scale;
+		float _translateX;
+		float _translateY;
+		float _translateZ;
 		std::vector<Vertex> _vertices;
 		std::vector<Texture> _textures;
 		std::vector<Normal> _normals;
