@@ -1,21 +1,26 @@
 #version 330 core
 
-in vec2 Texture;
-in vec3 Normal;
+in vec3 fPosition;
+in vec2 fTexture;
+in vec3 fNormal;
 
 out vec4 FragColor;
 
 uniform float mixValue;
-uniform sampler2D texture1;
-uniform sampler2D texture2;
+uniform sampler2D Texture;
+uniform vec3 lightPosition;
+uniform vec3 lightColor;
 
 void main() {
-    vec4 texColor1 = texture(texture1, Texture);
-    vec4 texColor2 = texture(texture2, Texture);
+    float ambientStrength =1;
+    vec3 ambient = vec3(ambientStrength * lightColor);
 
-    // Mélanger les couleurs des textures en fonction de mixValue
-    // FragColor = mix(texColor1, texColor2, mixValue);
-    //FragColor = mix(texColor1, vec4(0, 1.0, 0, 1.0), mixValue);
-    FragColor = texColor1;
-    // FragColor = mix(vec4(1.0, 0, 0, 1.0), vec4(0, 1.0, 0, 1.0), mixValue);;
+    vec3 norm = normalize(fNormal);
+    vec3 lightDirection = normalize(lightPosition - fPosition);
+    float diff = max(dot(norm, lightDirection), 0.0);
+    vec3 diffuse = vec3(lightColor);
+
+    // vec3 result = (ambient + diffuse) * vec3(texture(Texture, fTexture));
+    vec3 result = (diffuse) * vec3(1.0, 0.5, 0.31);
+    FragColor = vec4(result, 1.0);
 }

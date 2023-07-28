@@ -105,6 +105,20 @@ void Engine::loadTexture() {
 }
 
 void Engine::render() {
+	std::cout << _vertices.size() << std::endl;
+	for (unsigned int i = 0; i < _vertices.size(); i++)
+		std::cout << _vertices[i].z << std::endl;
+	// std::cout << _texturesNumber << std::endl;
+	// for (unsigned int i = 0; i < _texturesNumber * 2; i += 2)
+	// 	std::cout << " vt " << _textures[i] << " " << _textures[i + 1] << std::endl;
+	// std::cout << _normalsNumber << std::endl;
+	// for (unsigned int i = 0; i < _normalsNumber * 3; i += 3)
+	// 	std::cout << "n " << _normals[i] << " " << _normals[i + 1] << " " << _normals[i + 2] << std::endl;
+	// std::cout << _indicesNumber << std::endl;
+	// for (unsigned int i = 0; i < _indices.size(); i += 3)
+	// 	std::cout << " f " << _indices[i] << " " << _indices[i + 1] << " " << _indices[i + 2] << std::endl;
+
+
 	glGenVertexArrays(1, &_vao);
 	glGenBuffers(1, &_vboVertices);
 	glGenBuffers(1, &_vboTextures);
@@ -127,13 +141,34 @@ void Engine::render() {
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Normal), 0);
 	glEnableVertexAttribArray(2);
 
+	// unsigned int lightVAO;
+	// glGenVertexArrays(1, &lightVAO);
+	// glBindVertexArray(lightVAO);
+	// // we only need to bind to the VBO, the container's VBO's data already contains the data.
+	// glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	// // set the vertex attribute
+	// glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	// glEnableVertexAttribArray(0);
+
 	if (_indices.size() > 0) {
 		glGenBuffers(1, &_ebo);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.size() * sizeof(unsigned int), &_indices[0], GL_STATIC_DRAW);
 	}
 
+	float lightPosition[3];
+	lightPosition[0] = 0.0f;
+	lightPosition[1] = 0.0f;
+	lightPosition[2] = 10.0f;
+
+	float lightColor[3];
+	lightColor[0] = 1.0f;
+	lightColor[1] = 1.0f;
+	lightColor[2] = 1.0f;
+
 	_shaders->setInt("texture", _texture);
+	_shaders->setVector3("lightPosition", lightPosition);
+	_shaders->setVector3("lightColor", lightColor);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
@@ -143,6 +178,8 @@ void Engine::render() {
 	_modelMatrix->scale(_scale);
 	_modelMatrix->rotateY(M_PI / 2);
 	_modelMatrix->perspective(M_PI / 4, static_cast<float>(WIN_WIDTH) / static_cast<float>(WIN_HEIGHT), 0.1f, 100.0f);
+
+	std::cout << *_modelMatrix << std::endl;
 
 	while (!glfwWindowShouldClose(_window)) {
 		_processInput(_window);
