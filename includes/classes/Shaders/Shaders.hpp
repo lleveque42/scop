@@ -32,9 +32,10 @@ class Shaders
 		void load();
 		void compile();
 		void use();
-		void setBool(const std::string &name, bool value) const;
-		void setInt(const std::string &name, int value) const;
-		void setFloat(const std::string &name, float value) const;
-		void setMat4(const std::string &name, float *value) const;
+		void setBool(const std::string &name, const bool value) const;
+		void setInt(const std::string &name, const int value) const;
+		void setFloat(const std::string &name, const float value) const;
+		void setVector3(const std::string &name, const float vector[3]) const;
+		void setMat4(const std::string &name, const float *value) const;
 		void setPointer(const std::string &name, GLint size, GLsizei stride, const void *pointer) const;
 };
