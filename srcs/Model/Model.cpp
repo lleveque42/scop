@@ -43,36 +43,6 @@ void Model::load() {
 	}
 	_normalizeVertices();
 	_modelFile->close();
-	// std::cout << "VERTICES\n";
-	// for (const Vertex &vertex : _vertices) {
-	// 	std::cout << "x: " << vertex.x;
-	// 	std::cout << " y: " << vertex.y;
-	// 	std::cout << " z: " << vertex.z << std::endl;
-	// }
-	// std::cout << "TEXTURES\n";
-	// for (const Texture &texture : _textures) {
-	// 	std::cout << "u: " << texture.u;
-	// 	std::cout << " v: " << texture.v << std::endl;
-	// }
-	// std::cout << "NORMALS\n";
-	// for (const Normal &normal : _normals) {
-	// 	std::cout << "x: " << normal.nx;
-	// 	std::cout << " y: " << normal.ny;
-	// 	std::cout << " z: " << normal.nz << std::endl;
-	// }
-	// std::cout << "FACES" << _faces.size() << "\n";
-	// for (const Face &face : _faces) {
-	// 	std::cout << "x: " << face.verticesIndices[0];
-	// 	std::cout << " y: " << face.verticesIndices[1];
-	// 	std::cout << " z: " << face.verticesIndices[2] << std::endl;
-	// 	std::cout << "1: " << face.texturesIndices[0];
-	// 	std::cout << " 2: " << face.texturesIndices[1];
-	// 	std::cout << " 3: " << face.texturesIndices[2] << std::endl;
-	// 	std::cout << "x: " << face.normalsIndices[0];
-	// 	std::cout << " y: " << face.normalsIndices[1];
-	// 	std::cout << " z: " << face.normalsIndices[2] << std::endl;
-	// }
-
 }
 
 std::string Model::getModelName() const {
@@ -91,8 +61,12 @@ std::vector<Normal> Model::getNormals() const {
 	return _normals;
 }
 
-std::vector<Face> Model::getFaces() const {
-	return _faces;
+std::vector<unsigned int> Model::getFacesV() const {
+	return _facesV;
+}
+
+std::vector<Face> Model::getFacesVTN() const {
+	return _facesVTN;
 }
 
 facesType Model::_getFacesType(const std::string &line) {
@@ -162,21 +136,20 @@ void Model::_parseFaces(const std::string &line, unsigned int i) {
 	std::vector<std::string> splittedLine;
 	std::vector<std::string> slashLine;
 
-	// if (_facesType == V) {
-	// 	std::vector<unsigned int> faces;
+	if (_facesType == V) {
+		std::vector<unsigned int> faces;
 
-	// 	splittedLine = utils::split(line, ' ');
-	// 	if (splittedLine.size() != 4)
-	// 		throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
-	// 	try {
-	// 		faces.push_back(std::stoul(splittedLine[1]));
-	// 		faces.push_back(std::stoul(splittedLine[2]));
-	// 		faces.push_back(std::stoul(splittedLine[3]));
-	// 	} catch(std::exception &e) {
-	// 		throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
-	// 	}
-	// } else
-	if (_facesType == VTN) {
+		splittedLine = utils::split(line, ' ');
+		if (splittedLine.size() != 4)
+			throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
+		try {
+			_facesV.push_back(std::stoul(splittedLine[1]));
+			_facesV.push_back(std::stoul(splittedLine[2]));
+			_facesV.push_back(std::stoul(splittedLine[3]));
+		} catch(std::exception &e) {
+			throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
+		}
+	} else if (_facesType == VTN) {
 		Face face;
 
 		splittedLine = utils::split(line, ' ');
@@ -194,7 +167,7 @@ void Model::_parseFaces(const std::string &line, unsigned int i) {
 				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
 			}
 		}
-		_faces.push_back(face);
+		_facesVTN.push_back(face);
 	}
 }
 

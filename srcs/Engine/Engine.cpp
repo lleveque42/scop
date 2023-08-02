@@ -11,6 +11,8 @@ _translateX(0), _translateY(0), _translateZ(-3.0f)
 		throw ERR_GLFW_INIT;
 	_shaders = new Shaders();
 	_modelMatrix = new Matrix();
+	_viewMatrix = new Matrix();
+	_projectionMatrix = new Matrix();
 }
 
 Engine::~Engine() {
@@ -20,6 +22,8 @@ Engine::~Engine() {
 	glfwTerminate();
 	delete _shaders;
 	delete _modelMatrix;
+	delete _viewMatrix;
+	delete _projectionMatrix;
 }
 
 void Engine::initialize(const std::string &modelName) {
@@ -56,19 +60,23 @@ void Engine::loadModel(Model *model) {
 	std::vector<Vertex> vertices = model->getVertices();
 	std::vector<Texture> textures = model->getTextures();
 	std::vector<Normal> normals = model->getNormals();
-	std::vector<Face> faces = model->getFaces();
+	std::vector<unsigned int> facesV = model->getFacesV();
+	std::vector<Face> facesVTN = model->getFacesVTN();
 
-	for (const Face &face : faces) {
-		for (unsigned int i = 0; i < 3; i++) {
-			_vertices.push_back(vertices[face.verticesIndices[i] - 1]);
-			_textures.push_back(textures[face.texturesIndices[i] - 1]);
-			_normals.push_back(normals[face.normalsIndices[i] - 1]);
+	if (facesV.size()) {
+		_vertices = vertices;
+		_textures = textures;
+		_normals = normals;
+		_indices = facesV;
+	} else {
+		for (const Face &face : facesVTN) {
+			for (unsigned int i = 0; i < 3; i++) {
+				_vertices.push_back(vertices[face.verticesIndices[i] - 1]);
+				_textures.push_back(textures[face.texturesIndices[i] - 1]);
+				_normals.push_back(normals[face.normalsIndices[i] - 1]);
+			}
 		}
-		// _indices.push_back(face.verticesIndices[0] - 1);
-		// _indices.push_back(face.verticesIndices[1] - 1);
-		// _indices.push_back(face.verticesIndices[2] - 1);
 	}
-
 }
 
 void Engine::loadShaders() {
@@ -104,21 +112,11 @@ void Engine::loadTexture() {
 	stbi_image_free(textureData);
 }
 
+	#include <glm/glm.hpp>
+	#include <glm/gtc/matrix_transform.hpp>
+	#include <glm/gtc/type_ptr.hpp>
+
 void Engine::render() {
-	std::cout << _vertices.size() << std::endl;
-	for (unsigned int i = 0; i < _vertices.size(); i++)
-		std::cout << _vertices[i].z << std::endl;
-	// std::cout << _texturesNumber << std::endl;
-	// for (unsigned int i = 0; i < _texturesNumber * 2; i += 2)
-	// 	std::cout << " vt " << _textures[i] << " " << _textures[i + 1] << std::endl;
-	// std::cout << _normalsNumber << std::endl;
-	// for (unsigned int i = 0; i < _normalsNumber * 3; i += 3)
-	// 	std::cout << "n " << _normals[i] << " " << _normals[i + 1] << " " << _normals[i + 2] << std::endl;
-	// std::cout << _indicesNumber << std::endl;
-	// for (unsigned int i = 0; i < _indices.size(); i += 3)
-	// 	std::cout << " f " << _indices[i] << " " << _indices[i + 1] << " " << _indices[i + 2] << std::endl;
-
-
 	glGenVertexArrays(1, &_vao);
 	glGenBuffers(1, &_vboVertices);
 	glGenBuffers(1, &_vboTextures);
@@ -156,48 +154,30 @@ void Engine::render() {
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.size() * sizeof(unsigned int), &_indices[0], GL_STATIC_DRAW);
 	}
 
-	float lightPosition[3];
-	lightPosition[0] = 0.0f;
-	lightPosition[1] = 0.0f;
-	lightPosition[2] = 10.0f;
-
-	float lightColor[3];
-	lightColor[0] = 1.0f;
-	lightColor[1] = 1.0f;
-	lightColor[2] = 1.0f;
-
 	_shaders->setInt("texture", _texture);
-	_shaders->setVector3("lightPosition", lightPosition);
-	_shaders->setVector3("lightColor", lightColor);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
-	glFrontFace(GL_CW);
 
 	_modelMatrix->scale(_scale);
-	_modelMatrix->rotateY(M_PI / 2);
-	_modelMatrix->perspective(M_PI / 4, static_cast<float>(WIN_WIDTH) / static_cast<float>(WIN_HEIGHT), 0.1f, 100.0f);
-
-	std::cout << *_modelMatrix << std::endl;
+	_projectionMatrix->perspective(M_PI / 4, static_cast<float>(WIN_WIDTH) / static_cast<float>(WIN_HEIGHT), 0.1f, 100.0f);
 
 	while (!glfwWindowShouldClose(_window)) {
 		_processInput(_window);
 
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		_viewMatrix->translate(_translateX, _translateY, _translateZ);
+		float *rotatedMatrix = _modelMatrix->rotate(0, glfwGetTime(), 0);
 		_shaders->use();
 		_shaders->setFloat("mixValue", _mixValue);
-		_shaders->setMat4("model", _modelMatrix->getModel());
-		_modelMatrix->translate(_translateX, _translateY, _translateZ);
-		_shaders->setMat4("view", _modelMatrix->getView());
-		_shaders->setMat4("projection", _modelMatrix->getProjection());
-		_modelMatrix->rotateY(glfwGetTime());
+		_shaders->setMat4("model", rotatedMatrix);
+		_shaders->setMat4("view", _viewMatrix->getMatrix());
+		_shaders->setMat4("projection", _projectionMatrix->getMatrix());
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, _texture);
 		glBindVertexArray(_vao);
-		glPointSize(7.0f);
-		// glDrawArrays(GL_POINTS, 0, _vertices.size());
 		if (_indices.size() > 0)
 			glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, 0);
 		else
@@ -205,6 +185,7 @@ void Engine::render() {
 		glBindVertexArray(0);
 		glfwSwapBuffers(_window);
 		glfwPollEvents();
+		delete[] rotatedMatrix;
 	}
 }
 

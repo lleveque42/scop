@@ -32,6 +32,8 @@ class Engine {
 		GLuint _ebo;
 		Shaders *_shaders;
 		Matrix *_modelMatrix;
+		Matrix *_viewMatrix;
+		Matrix *_projectionMatrix;
 		unsigned int _texture;
 		static const std::string _defaultTexturePath;
 		float _mixValue;

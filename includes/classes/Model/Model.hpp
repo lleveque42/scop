@@ -32,7 +32,8 @@ class Model {
 		std::vector<Vertex> _vertices;
 		std::vector<Texture> _textures;
 		std::vector<Normal> _normals;
-		std::vector<Face> _faces;
+		std::vector<unsigned int> _facesV;
+		std::vector<Face> _facesVTN;
 		facesType _facesType;
 
 		facesType _getFacesType(const std::string &line);
@@ -52,5 +53,6 @@ class Model {
 		std::vector<Vertex> getVertices() const;
 		std::vector<Texture> getTextures() const;
 		std::vector<Normal> getNormals() const;
-		std::vector<Face> getFaces() const;
+		std::vector<unsigned int> getFacesV() const;
+		std::vector<Face> getFacesVTN() const;
 };
