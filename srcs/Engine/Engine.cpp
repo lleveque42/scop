@@ -4,8 +4,8 @@ const std::string workingDir = utils::getWorkingDirectory();
 const std::string Engine::_defaultTexturePath = workingDir + TEXTURE_PATH;
 
 Engine::Engine() : _window(nullptr), _vao(0), _vboVertices(0), _vboTextures(0),
-_vboNormals(0), _ebo(0), _shaders(nullptr), _texture(0), _mixValue(0), _scale(1.0f),
-_translateX(0), _translateY(0), _translateZ(-3.0f)
+_vboNormals(0), _shaders(nullptr), _texture(0), _mixValue(0), _scale(1.0f),
+_translateX(0), _translateY(0), _translateZ(-3.0f), _colorTransitioning(false)
 {
 	if (!glfwInit())
 		throw ERR_GLFW_INIT;
@@ -35,9 +35,9 @@ void Engine::initialize(const std::string &modelName) {
 		title = ssTitle.str();
 	}
 	glfwSetErrorCallback(_error_callback);
-	glfwWindowHint(GLFW_SAMPLES, 4); // anti-aliasing
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // OpenGl v3
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2); // OpenGl v3.3
+	glfwWindowHint(GLFW_SAMPLES, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 #if __APPLE__
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -58,17 +58,15 @@ void Engine::initialize(const std::string &modelName) {
 
 void Engine::loadModel(Model *model) {
 	std::vector<Vertex> vertices = model->getVertices();
-	std::vector<Texture> textures = model->getTextures();
-	std::vector<Normal> normals = model->getNormals();
 	std::vector<unsigned int> facesV = model->getFacesV();
-	std::vector<Face> facesVTN = model->getFacesVTN();
 
 	if (facesV.size()) {
-		_vertices = vertices;
-		_textures = textures;
-		_normals = normals;
-		_indices = facesV;
+		for (const unsigned int &face : facesV)
+			_vertices.push_back(vertices[face - 1]);
 	} else {
+		std::vector<Texture> textures = model->getTextures();
+		std::vector<Normal> normals = model->getNormals();
+		std::vector<Face> facesVTN = model->getFacesVTN();
 		for (const Face &face : facesVTN) {
 			for (unsigned int i = 0; i < 3; i++) {
 				_vertices.push_back(vertices[face.verticesIndices[i] - 1]);
@@ -112,15 +110,15 @@ void Engine::loadTexture() {
 	stbi_image_free(textureData);
 }
 
-	#include <glm/glm.hpp>
-	#include <glm/gtc/matrix_transform.hpp>
-	#include <glm/gtc/type_ptr.hpp>
-
 void Engine::render() {
+	double previousTime = glfwGetTime();
+	double currentTime = 0;
+	double deltaTime = 0;
+
 	glGenVertexArrays(1, &_vao);
-	glGenBuffers(1, &_vboVertices);
-	glGenBuffers(1, &_vboTextures);
 	glGenBuffers(1, &_vboNormals);
+	glGenBuffers(1, &_vboTextures);
+	glGenBuffers(1, &_vboVertices);
 
 	glBindVertexArray(_vao);
 
@@ -129,94 +127,115 @@ void Engine::render() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
 	glEnableVertexAttribArray(0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, _vboTextures);
-	glBufferData(GL_ARRAY_BUFFER, _textures.size() * sizeof(Texture), &_textures[0], GL_STATIC_DRAW);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Texture), 0);
-	glEnableVertexAttribArray(1);
-
-	glBindBuffer(GL_ARRAY_BUFFER, _vboNormals);
-	glBufferData(GL_ARRAY_BUFFER, _normals.size() * sizeof(Normal), &_normals[0], GL_STATIC_DRAW);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Normal), 0);
-	glEnableVertexAttribArray(2);
-
-	// unsigned int lightVAO;
-	// glGenVertexArrays(1, &lightVAO);
-	// glBindVertexArray(lightVAO);
-	// // we only need to bind to the VBO, the container's VBO's data already contains the data.
-	// glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	// // set the vertex attribute
-	// glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	// glEnableVertexAttribArray(0);
-
-	if (_indices.size() > 0) {
-		glGenBuffers(1, &_ebo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.size() * sizeof(unsigned int), &_indices[0], GL_STATIC_DRAW);
+	if (_textures.size()) {
+		glBindBuffer(GL_ARRAY_BUFFER, _vboTextures);
+		glBufferData(GL_ARRAY_BUFFER, _textures.size() * sizeof(Texture), &_textures[0], GL_STATIC_DRAW);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Texture), 0);
+		glEnableVertexAttribArray(1);
 	}
 
-	_shaders->setInt("texture", _texture);
+	if (_normals.size()) {
+		glBindBuffer(GL_ARRAY_BUFFER, _vboNormals);
+		glBufferData(GL_ARRAY_BUFFER, _normals.size() * sizeof(Normal), &_normals[0], GL_STATIC_DRAW);
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Normal), 0);
+		glEnableVertexAttribArray(2);
+	}
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
 	_modelMatrix->scale(_scale);
-	_projectionMatrix->perspective(M_PI / 4, static_cast<float>(WIN_WIDTH) / static_cast<float>(WIN_HEIGHT), 0.1f, 100.0f);
+	_projectionMatrix->perspective(FOV, static_cast<float>(WIN_WIDTH) / static_cast<float>(WIN_HEIGHT), 0.1f, 100.0f);
 
 	while (!glfwWindowShouldClose(_window)) {
-		_processInput(_window);
+		currentTime = glfwGetTime();
+		deltaTime = currentTime - previousTime;
+		previousTime = currentTime;
 
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		_processInput(_window, deltaTime);
+
+		glClearColor(BACKGROUND_COLOR);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		_viewMatrix->translate(_translateX, _translateY, _translateZ);
-		float *rotatedMatrix = _modelMatrix->rotate(0, glfwGetTime(), 0);
-		_shaders->use();
-		_shaders->setFloat("mixValue", _mixValue);
-		_shaders->setMat4("model", rotatedMatrix);
-		_shaders->setMat4("view", _viewMatrix->getMatrix());
-		_shaders->setMat4("projection", _projectionMatrix->getMatrix());
+
+		_updateShaders(currentTime);
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, _texture);
 		glBindVertexArray(_vao);
-		if (_indices.size() > 0)
-			glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, 0);
-		else
-			glDrawArrays(GL_TRIANGLES, 0, _vertices.size());
+		glDrawArrays(GL_TRIANGLES, 0, _vertices.size());
 		glBindVertexArray(0);
+
 		glfwSwapBuffers(_window);
 		glfwPollEvents();
-		delete[] rotatedMatrix;
 	}
 }
 
-void Engine::_processInput(GLFWwindow *window) {
+void Engine::_updateShaders(double currentTime) {
+	float *rotatedMatrix = _modelMatrix->rotate(0, static_cast<float>(currentTime), 0);
+
+	_viewMatrix->translate(_translateX, _translateY, _translateZ);
+
+	_shaders->use();
+	_shaders->setFloat("mixValue", _mixValue);
+	_shaders->setInt("textureId", _texture);
+	_shaders->setMat4("model", rotatedMatrix);
+	_shaders->setMat4("view", _viewMatrix->getMatrix());
+	_shaders->setMat4("projection", _projectionMatrix->getMatrix());
+
+	delete[] rotatedMatrix;
+}
+
+void Engine::_processInput(GLFWwindow *window, double deltaTime) {
+	if (_colorTransitioning)
+		_transitionTextureColor(deltaTime, false);
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-	else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-		if (_mixValue < 1)
-			_mixValue += 0.01;
-	} else if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-		if (_mixValue > 0)
-			_mixValue -= 0.01;
-	} else if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-		_scale += 0.01;
-		_modelMatrix->scale(_scale);
-	} else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-		if (_scale - 0.01 > 0)
-			_scale -= 0.01;
-		_modelMatrix->scale(_scale);
-	} else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		_translateZ -= 0.025;
-	} else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		_translateZ += 0.025;
-	} else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		_translateX -= 0.025;
-	} else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		_translateX += 0.025;
-	} else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-		_translateY -= 0.025;
-	} else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-		_translateY += 0.025;
+	else if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
+		if (!_colorTransitioning) {
+			_colorTransitioning = true;
+			_transitionTextureColor(deltaTime, true);
+		}
+	} else if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+		_modelMatrix->scale(_scale += SCALE_SPEED);
+	else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+		_modelMatrix->scale(_scale - SCALE_SPEED > 0 ? _scale -= SCALE_SPEED : _scale);
+	else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		_translateZ -= TRANSLATE_SPEED;
+	else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		_translateZ += TRANSLATE_SPEED;
+	else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		_translateX -= TRANSLATE_SPEED;
+	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		_translateX += TRANSLATE_SPEED;
+	else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+		_translateY -= TRANSLATE_SPEED;
+	else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+		_translateY += TRANSLATE_SPEED;
+}
+
+void Engine::_transitionTextureColor(double deltaTime, bool newTransition) {
+	static bool toTexture;
+	static bool toColor;
+
+	if (newTransition) {
+		if (_mixValue < 0.5f) {
+			toColor = false;
+			toTexture = true;
+		}
+		else {
+			toColor = true;
+			toTexture = false;
+		}
+		newTransition = false;
+	}
+	if (toTexture)
+		_mixValue += static_cast<float>(deltaTime);
+	else if (toColor)
+		_mixValue -= static_cast<float>(deltaTime);
+	if (_mixValue >= 1 || _mixValue <= 0) {
+		_colorTransitioning = false;
+		newTransition = true;
 	}
 }
 
@@ -225,7 +244,6 @@ void Engine::_clearShaders() {
 	if (_vboVertices) glDeleteBuffers(1, &_vboVertices);
 	if (_vboTextures) glDeleteBuffers(1, &_vboTextures);
 	if (_vboNormals) glDeleteBuffers(1, &_vboNormals);
-	if (_ebo) glDeleteBuffers(1, &_ebo);
 }
 
 void Engine::_error_callback(int error, const char* description) {

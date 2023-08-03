@@ -22,14 +22,22 @@
 
 #define TEXTURE_PATH "/resources/poney.jpg"
 
+#define BACKGROUND_COLOR 0.1f, 0.1f, 0.1f, 1.0f
+#define FOV M_PI / 4
+
+#define TRANSLATE_SPEED 0.025
+#define SCALE_SPEED 0.01
+
 class Engine {
 	private:
 		GLFWwindow *_window;
+		std::vector<Vertex> _vertices;
+		std::vector<Texture> _textures;
+		std::vector<Normal> _normals;
 		GLuint _vao;
 		GLuint _vboVertices;
 		GLuint _vboTextures;
 		GLuint _vboNormals;
-		GLuint _ebo;
 		Shaders *_shaders;
 		Matrix *_modelMatrix;
 		Matrix *_viewMatrix;
@@ -41,14 +49,13 @@ class Engine {
 		float _translateX;
 		float _translateY;
 		float _translateZ;
-		std::vector<Vertex> _vertices;
-		std::vector<Texture> _textures;
-		std::vector<Normal> _normals;
-		std::vector<unsigned int> _indices;
+		bool _colorTransitioning;
 
 		static void _error_callback(int error, const char* description);
 		static void _framebuffer_size_callback(GLFWwindow *window, int width, int height);
-		void _processInput(GLFWwindow *window);
+		void _processInput(GLFWwindow *window, double deltaTime);
+		void _updateShaders(double currentTime);
+		void _transitionTextureColor(double deltaTime, bool newTransition);
 		void _clearShaders();
 
 	public:
