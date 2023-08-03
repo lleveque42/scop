@@ -137,8 +137,6 @@ void Engine::render() {
 	}
 
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
 
 	_modelMatrix->scale(_scale);
 	_projectionMatrix->perspective(FOV, static_cast<float>(WIN_WIDTH) / static_cast<float>(WIN_HEIGHT), 0.1f, 100.0f);

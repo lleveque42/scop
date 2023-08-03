@@ -23,8 +23,7 @@ void Model::load() {
 		if (utils::startsWith(line, NAME_PREFIX)) {
 			splittedLine = utils::split(line, ' ');
 			_modelName = splittedLine[1];
-		}
-		else if (utils::startsWith(line, VERTICE_PREFIX)) _parseVertices(line, i);
+		} else if (utils::startsWith(line, VERTICE_PREFIX)) _parseVertices(line, i);
 		else if (utils::startsWith(line, TEXTURE_PREFIX)) _parseTextures(line, i);
 		else if (utils::startsWith(line, NORMAL_PREFIX)) _parseNormals(line, i);
 		else if (utils::startsWith(line, FACE_PREFIX)) {
@@ -158,7 +157,7 @@ void Model::_normalizeVertices() {
 	float minX, maxX, minY, maxY, minZ, maxZ = 0;
 	float absMax = 0;
 
-	if (_vertices.size() > 0) {
+	if (_sortedVertices.size() > 0) {
 		minX = maxX = _sortedVertices[0].x;
 		minY = maxY = _sortedVertices[0].y;
 		minZ = maxZ = _sortedVertices[0].z;
