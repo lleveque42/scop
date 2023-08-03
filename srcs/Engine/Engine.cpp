@@ -57,28 +57,17 @@ void Engine::initialize(const std::string &modelName) {
 }
 
 void Engine::loadModel(Model *model) {
-	std::vector<Vertex> vertices = model->getVertices();
-	std::vector<unsigned int> facesV = model->getFacesV();
+	_vertices = model->getVertices();
+	_textures = model->getTextures();
+	_normals = model->getNormals();
 
-	if (facesV.size()) {
-		for (unsigned int i = 0; i < facesV.size(); i++) {
+	if (!_normals.size()) {
+		for (unsigned int i = 0; i < _vertices.size(); i++) {
 			Normal normal;
 			normal.nx = i % 3 == 0 ? 1.0f : 0.0f;
 			normal.ny = i % 3 == 1 ? 1.0f : 0.0f;
 			normal.nz = i % 3 == 2 ? 1.0f : 0.0f;
-			_vertices.push_back(vertices[facesV[i] - 1]);
 			_normals.push_back(normal);
-		}
-	} else {
-		std::vector<Texture> textures = model->getTextures();
-		std::vector<Normal> normals = model->getNormals();
-		std::vector<Face> facesVTN = model->getFacesVTN();
-		for (const Face &face : facesVTN) {
-			for (unsigned int i = 0; i < 3; i++) {
-				_vertices.push_back(vertices[face.verticesIndices[i] - 1]);
-				_textures.push_back(textures[face.texturesIndices[i] - 1]);
-				_normals.push_back(normals[face.normalsIndices[i] - 1]);
-			}
 		}
 	}
 }

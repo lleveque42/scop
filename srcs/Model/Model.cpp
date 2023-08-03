@@ -14,10 +14,6 @@ Model::~Model() {
 	delete _modelFile;
 }
 
-std::ifstream *Model::getModelFile() const {
-	return _modelFile;
-}
-
 void Model::load() {
 	unsigned int i = 1;
 	std::string line;
@@ -50,23 +46,15 @@ std::string Model::getModelName() const {
 }
 
 std::vector<Vertex> Model::getVertices() const {
-	return _vertices;
+	return _sortedVertices;
 }
 
 std::vector<Texture> Model::getTextures() const {
-	return _textures;
+	return _sortedTextures;
 }
 
 std::vector<Normal> Model::getNormals() const {
-	return _normals;
-}
-
-std::vector<unsigned int> Model::getFacesV() const {
-	return _facesV;
-}
-
-std::vector<Face> Model::getFacesVTN() const {
-	return _facesVTN;
+	return _sortedNormals;
 }
 
 facesType Model::_getFacesType(const std::string &line) {
@@ -137,37 +125,32 @@ void Model::_parseFaces(const std::string &line, unsigned int i) {
 	std::vector<std::string> slashLine;
 
 	if (_facesType == V) {
-		std::vector<unsigned int> faces;
-
 		splittedLine = utils::split(line, ' ');
 		if (splittedLine.size() != 4)
 			throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
 		try {
-			_facesV.push_back(std::stoul(splittedLine[1]));
-			_facesV.push_back(std::stoul(splittedLine[2]));
-			_facesV.push_back(std::stoul(splittedLine[3]));
+			_sortedVertices.push_back(_vertices[std::stoul(splittedLine[1]) - 1]);
+			_sortedVertices.push_back(_vertices[std::stoul(splittedLine[2]) - 1]);
+			_sortedVertices.push_back(_vertices[std::stoul(splittedLine[3]) - 1]);
 		} catch(std::exception &e) {
 			throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
 		}
 	} else if (_facesType == VTN) {
-		Face face;
-
 		splittedLine = utils::split(line, ' ');
 		if (splittedLine.size() != 4)
 			throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
-		for (unsigned int i = 1; i < splittedLine.size(); i++) {
-			slashLine = utils::split(splittedLine[i], '/');
+		for (unsigned int j = 1; j < splittedLine.size(); j++) {
+			slashLine = utils::split(splittedLine[j], '/');
 			if (slashLine.size() != 3)
 				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
 			try {
-				face.verticesIndices[i - 1] = std::stoul(slashLine[0]);
-				face.texturesIndices[i - 1] = std::stoul(slashLine[1]);
-				face.normalsIndices[i - 1] = std::stoul(slashLine[2]);
+				_sortedVertices.push_back(_vertices[std::stoul(slashLine[0]) - 1]);
+				_sortedTextures.push_back(_textures[std::stoul(slashLine[1]) - 1]);
+				_sortedNormals.push_back(_normals[std::stoul(slashLine[2]) - 1]);
 			} catch(std::exception &e) {
 				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
 			}
 		}
-		_facesVTN.push_back(face);
 	}
 }
 
@@ -176,22 +159,22 @@ void Model::_normalizeVertices() {
 	float absMax = 0;
 
 	if (_vertices.size() > 0) {
-		minX = maxX = _vertices[0].x;
-		minY = maxY = _vertices[0].y;
-		minZ = maxZ = _vertices[0].z;
+		minX = maxX = _sortedVertices[0].x;
+		minY = maxY = _sortedVertices[0].y;
+		minZ = maxZ = _sortedVertices[0].z;
 	}
-	for (unsigned int i = 1; i < _vertices.size(); i++) {
-		minX = _vertices[i].x < minX ? _vertices[i].x : minX;
-		maxX = _vertices[i].x > maxX ? _vertices[i].x : maxX;
-		minY = _vertices[i].y < minY ? _vertices[i].y : minY;
-		maxY = _vertices[i].y > maxY ? _vertices[i].y : maxY;
-		minZ = _vertices[i].z < minZ ? _vertices[i].z : minZ;
-		maxZ = _vertices[i].z > maxZ ? _vertices[i].z : maxZ;
+	for (unsigned int i = 1; i < _sortedVertices.size(); i++) {
+		minX = _sortedVertices[i].x < minX ? _sortedVertices[i].x : minX;
+		maxX = _sortedVertices[i].x > maxX ? _sortedVertices[i].x : maxX;
+		minY = _sortedVertices[i].y < minY ? _sortedVertices[i].y : minY;
+		maxY = _sortedVertices[i].y > maxY ? _sortedVertices[i].y : maxY;
+		minZ = _sortedVertices[i].z < minZ ? _sortedVertices[i].z : minZ;
+		maxZ = _sortedVertices[i].z > maxZ ? _sortedVertices[i].z : maxZ;
 	}
 	absMax = std::max({std::abs(minX), std::abs(maxX), std::abs(minY), std::abs(maxY), std::abs(minZ), std::abs(maxZ)});
 	if (absMax == 0)
 		return;
-	for (Vertex &vertice : _vertices) {
+	for (Vertex &vertice : _sortedVertices) {
 		vertice.x /= absMax;
 		vertice.y /= absMax;
 		vertice.z /= absMax;
