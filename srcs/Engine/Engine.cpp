@@ -53,7 +53,7 @@ void Engine::initialize(const std::string &modelName) {
 		throw ERR_GLEW_INIT;
 	}
 	glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT);
-	glfwSetFramebufferSizeCallback(_window, _framebuffer_size_callback); // dynamic window size
+	glfwSetFramebufferSizeCallback(_window, _framebuffer_size_callback);
 }
 
 void Engine::loadModel(Model *model) {
@@ -61,8 +61,14 @@ void Engine::loadModel(Model *model) {
 	std::vector<unsigned int> facesV = model->getFacesV();
 
 	if (facesV.size()) {
-		for (const unsigned int &face : facesV)
-			_vertices.push_back(vertices[face - 1]);
+		for (unsigned int i = 0; i < facesV.size(); i++) {
+			Normal normal;
+			normal.nx = i % 3 == 0 ? 1.0f : 0.0f;
+			normal.ny = i % 3 == 1 ? 1.0f : 0.0f;
+			normal.nz = i % 3 == 2 ? 1.0f : 0.0f;
+			_vertices.push_back(vertices[facesV[i] - 1]);
+			_normals.push_back(normal);
+		}
 	} else {
 		std::vector<Texture> textures = model->getTextures();
 		std::vector<Normal> normals = model->getNormals();
@@ -116,9 +122,9 @@ void Engine::render() {
 	double deltaTime = 0;
 
 	glGenVertexArrays(1, &_vao);
-	glGenBuffers(1, &_vboNormals);
-	glGenBuffers(1, &_vboTextures);
 	glGenBuffers(1, &_vboVertices);
+	glGenBuffers(1, &_vboTextures);
+	glGenBuffers(1, &_vboNormals);
 
 	glBindVertexArray(_vao);
 
@@ -230,13 +236,11 @@ void Engine::_transitionTextureColor(double deltaTime, bool newTransition) {
 		newTransition = false;
 	}
 	if (toTexture)
-		_mixValue += static_cast<float>(deltaTime);
+		_mixValue = _mixValue + static_cast<float>(deltaTime * 2) > 1.0f ? 1.0f : _mixValue + static_cast<float>(deltaTime * 2);
 	else if (toColor)
-		_mixValue -= static_cast<float>(deltaTime);
-	if (_mixValue >= 1 || _mixValue <= 0) {
+		_mixValue = _mixValue - static_cast<float>(deltaTime * 2) < 0.0f ? 0.0f : _mixValue - static_cast<float>(deltaTime * 2);
+	if (_mixValue == 1 || _mixValue == 0)
 		_colorTransitioning = false;
-		newTransition = true;
-	}
 }
 
 void Engine::_clearShaders() {
