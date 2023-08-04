@@ -36,6 +36,11 @@ void Model::load() {
 		}
 		i++;
 	}
+	if (!_sortedVertices.size()) {
+		_sortedVertices = _vertices;
+		_sortedTextures = _textures;
+		_sortedNormals = _normals;
+	}
 	_normalizeVertices();
 	_modelFile->close();
 }
@@ -128,9 +133,9 @@ void Model::_parseFaces(const std::string &line, unsigned int i) {
 		if (splittedLine.size() != 4)
 			throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
 		try {
-			_sortedVertices.push_back(_vertices[std::stoul(splittedLine[1]) - 1]);
-			_sortedVertices.push_back(_vertices[std::stoul(splittedLine[2]) - 1]);
-			_sortedVertices.push_back(_vertices[std::stoul(splittedLine[3]) - 1]);
+			_sortedVertices.push_back(_vertices.at(std::stoul(splittedLine[1]) - 1));
+			_sortedVertices.push_back(_vertices.at(std::stoul(splittedLine[2]) - 1));
+			_sortedVertices.push_back(_vertices.at(std::stoul(splittedLine[3]) - 1));
 		} catch(std::exception &e) {
 			throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
 		}
@@ -143,9 +148,9 @@ void Model::_parseFaces(const std::string &line, unsigned int i) {
 			if (slashLine.size() != 3)
 				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
 			try {
-				_sortedVertices.push_back(_vertices[std::stoul(slashLine[0]) - 1]);
-				_sortedTextures.push_back(_textures[std::stoul(slashLine[1]) - 1]);
-				_sortedNormals.push_back(_normals[std::stoul(slashLine[2]) - 1]);
+				_sortedVertices.push_back(_vertices.at(std::stoul(slashLine[0]) - 1));
+				_sortedTextures.push_back(_textures.at(std::stoul(slashLine[1]) - 1));
+				_sortedNormals.push_back(_normals.at(std::stoul(slashLine[2]) - 1));
 			} catch(std::exception &e) {
 				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
 			}
@@ -155,27 +160,32 @@ void Model::_parseFaces(const std::string &line, unsigned int i) {
 
 void Model::_normalizeVertices() {
 	float minX, maxX, minY, maxY, minZ, maxZ = 0;
-	float absMax = 0;
+	float centerX, centerY, centerZ = 0;
+	float maxDelta, scale = 0;
 
 	if (_sortedVertices.size() > 0) {
 		minX = maxX = _sortedVertices[0].x;
 		minY = maxY = _sortedVertices[0].y;
 		minZ = maxZ = _sortedVertices[0].z;
 	}
-	for (unsigned int i = 1; i < _sortedVertices.size(); i++) {
-		minX = _sortedVertices[i].x < minX ? _sortedVertices[i].x : minX;
-		maxX = _sortedVertices[i].x > maxX ? _sortedVertices[i].x : maxX;
-		minY = _sortedVertices[i].y < minY ? _sortedVertices[i].y : minY;
-		maxY = _sortedVertices[i].y > maxY ? _sortedVertices[i].y : maxY;
-		minZ = _sortedVertices[i].z < minZ ? _sortedVertices[i].z : minZ;
-		maxZ = _sortedVertices[i].z > maxZ ? _sortedVertices[i].z : maxZ;
-	}
-	absMax = std::max({std::abs(minX), std::abs(maxX), std::abs(minY), std::abs(maxY), std::abs(minZ), std::abs(maxZ)});
-	if (absMax == 0)
-		return;
 	for (Vertex &vertice : _sortedVertices) {
-		vertice.x /= absMax;
-		vertice.y /= absMax;
-		vertice.z /= absMax;
+		maxX = std::max(maxX, vertice.x);
+		maxY = std::max(maxY, vertice.y);
+		maxZ = std::max(maxZ, vertice.z);
+		minX = std::min(minX, vertice.x);
+		minY = std::min(minY, vertice.y);
+		minZ = std::min(minZ, vertice.z);
+	}
+	centerX = (maxX + minX) / 2.0f;
+	centerY = (maxY + minY) / 2.0f;
+	centerZ = (maxZ + minZ) / 2.0f;
+	maxDelta = std::max({maxX - minX, maxY - minY, maxZ - minZ});
+	if (maxDelta == 0)
+		return;
+	scale = 2.0f / maxDelta;
+	for (Vertex &vertice : _sortedVertices) {
+		vertice.x = (vertice.x - centerX) * scale;
+		vertice.y = (vertice.y - centerY) * scale;
+		vertice.z = (vertice.z - centerZ) * scale;
 	}
 }
