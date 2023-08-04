@@ -20,7 +20,10 @@
 #define WIN_HEIGHT 480
 #define WIN_TITLE "Scop"
 
-#define TEXTURE_PATH "/resources/poney.jpg"
+// #define TEXTURE_PATH "/resources/poney.jpg"
+// #define TEXTURE_PATH "/resources/stall.png"
+// #define TEXTURE_PATH "/resources/robot.png"
+#define TEXTURE_PATH "/resources/monster.png"
 
 #define BACKGROUND_COLOR 0.1f, 0.1f, 0.1f, 1.0f
 #define FOV M_PI / 4
