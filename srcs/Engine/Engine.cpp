@@ -83,11 +83,11 @@ void Engine::loadTexture() {
 	int nbrChannels = 0;
 	stbi_uc *textureData = nullptr;
 
+	stbi_set_flip_vertically_on_load(true);
 	textureData = stbi_load(_defaultTexturePath.c_str(), &width, &height, &nbrChannels, 0);
 	if (!textureData)
 		throw ERR_LOADING_TEXTURE;
 
-	stbi_set_flip_vertically_on_load(true);
 	glGenTextures(1, &_texture);
 	glBindTexture(GL_TEXTURE_2D, _texture);
 
@@ -98,7 +98,7 @@ void Engine::loadTexture() {
 
 	if (nbrChannels == 3)
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, textureData);
-	else if (nbrChannels == 4)
+	else if (nbrChannels > 3)
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData);
 
 	glGenerateMipmap(GL_TEXTURE_2D);

@@ -15,7 +15,7 @@ void main() {
     // vec3 result = (diffuse) * vec3(1.0, 0.5, 0.31);
     // FragColor = vec4(result, 1.0);
     // if (tex)
-    vec4 textureColor = texture(textureData, fTexture);
+    vec4 textureColor = texture2D(textureData, fTexture);
     vec4 normalColor = vec4(abs(fNormal), 1.0);
     FragColor = mix(normalColor, textureColor, mixValue);
 }
