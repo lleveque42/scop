@@ -5,7 +5,7 @@ const std::string Engine::_defaultTexturePath = workingDir + TEXTURE_PATH;
 
 Engine::Engine() : _window(nullptr), _vao(0), _vboVertices(0), _vboTextures(0),
 _vboNormals(0), _shaders(nullptr), _texture(0), _mixValue(0), _scale(1.0f),
-_translateX(0), _translateY(0), _translateZ(-3.0f), _colorTransitioning(false)
+ _translateX(0), _translateY(0), _translateZ(-3.0f), _colorTransitioning(false)
 {
 	if (!glfwInit())
 		throw ERR_GLFW_INIT;
@@ -208,25 +208,34 @@ void Engine::_processInput(GLFWwindow *window, double deltaTime) {
 }
 
 void Engine::_transitionTextureColor(double deltaTime, bool newTransition) {
-	static bool toTexture;
 	static bool toColor;
+	static bool toGray;
+	static bool toTexture;
 
 	if (newTransition) {
-		if (_mixValue < 0.5f) {
+		if (_mixValue < 1.0f) {
 			toColor = false;
+			toGray = true;
+			toTexture = false;
+		} else if (_mixValue == 1.0f) {
+			toColor = false;
+			toGray = false;
 			toTexture = true;
 		}
 		else {
 			toColor = true;
+			toGray = false;
 			toTexture = false;
 		}
 		newTransition = false;
 	}
-	if (toTexture)
+	if (toGray)
 		_mixValue = _mixValue + static_cast<float>(deltaTime * 2) > 1.0f ? 1.0f : _mixValue + static_cast<float>(deltaTime * 2);
+	else if (toTexture)
+		_mixValue = _mixValue + static_cast<float>(deltaTime * 2) > 2.0f ? 2.0f : _mixValue + static_cast<float>(deltaTime * 2);
 	else if (toColor)
-		_mixValue = _mixValue - static_cast<float>(deltaTime * 2) < 0.0f ? 0.0f : _mixValue - static_cast<float>(deltaTime * 2);
-	if (_mixValue == 1 || _mixValue == 0)
+		_mixValue = _mixValue + static_cast<float>(deltaTime * 2) > 3.0f ? 0.0f : _mixValue + static_cast<float>(deltaTime * 2);
+	if (_mixValue == 2.0f || _mixValue == 1.0f || _mixValue == 0.0f)
 		_colorTransitioning = false;
 }
 

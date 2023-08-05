@@ -11,11 +11,15 @@ uniform sampler2D textureData;
 uniform int textureId;
 
 void main() {
-    // vec3 result = (ambient + diffuse) * vec3(texture(Texture, fTexture));
-    // vec3 result = (diffuse) * vec3(1.0, 0.5, 0.31);
-    // FragColor = vec4(result, 1.0);
-    // if (tex)
-    vec4 textureColor = texture2D(textureData, fTexture);
     vec4 normalColor = vec4(abs(fNormal), 1.0);
-    FragColor = mix(normalColor, textureColor, mixValue);
+    float gray = (0.333 * normalColor.x + 0.650 * normalColor.y + 0.150 * normalColor.z) / 2.0f;
+    vec4 grayColor = vec4(gray, gray, gray, 1.0);
+    vec4 textureColor = texture2D(textureData, fTexture);
+
+    if (mixValue < 1)
+        FragColor = mix(normalColor, grayColor, mixValue);
+    else if (mixValue >= 1 && mixValue < 2)
+        FragColor = mix(grayColor, textureColor, mixValue - 1);
+    else if (mixValue >= 2)
+        FragColor = mix(textureColor, normalColor, mixValue - 2);
 }
