@@ -142,7 +142,6 @@ void Model::_parseFaces(const std::string &line, unsigned int i) {
 	std::vector<std::string> slashLine;
 
 	splittedLine = utils::split(line, ' ');
-		// throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
 	switch (_facesType) {
 		case V3:
 			if (splittedLine.size() != 4)

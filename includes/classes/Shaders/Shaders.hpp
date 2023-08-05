@@ -15,7 +15,6 @@
 #define VERTEX_SHADER_PATH "/shaders/shader.vert"
 #define FRAGMENT_SHADER_PATH "/shaders/shader.frag"
 
-
 class Shaders
 {
 	private:

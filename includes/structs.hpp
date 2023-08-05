@@ -11,9 +11,3 @@ struct Texture {
 struct Normal {
 	float nx, ny, nz;
 };
-
-struct Face {
-	int verticesIndices[3];
-	int texturesIndices[3];
-	int normalsIndices[3];
-};

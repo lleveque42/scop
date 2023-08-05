@@ -11,8 +11,6 @@
 #include "Shaders.hpp"
 
 #define DEFAULT_MODEL_PATH "./resources/42/42.obj"
-// #define DEFAULT_MODEL_PATH "./resources/triangle/triangle.obj"
-// #define DEFAULT_MODEL_PATH "./resources/rectangle/rectangle.obj"
 
 #define ERR_INVALID_ARG "Error: invalid argument: "
 #define ERR "Error: "

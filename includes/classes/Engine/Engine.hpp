@@ -34,7 +34,6 @@
 #define FOV M_PI / 4
 
 #define TRANSLATE_SPEED 0.025
-#define SCALE_SPEED 0.01
 
 class Engine {
 	private:
