@@ -1,11 +1,8 @@
 #include "Engine.hpp"
 
-const std::string workingDir = utils::getWorkingDirectory();
-const std::string Engine::_defaultTexturePath = workingDir + TEXTURE_PATH;
-
 Engine::Engine() : _window(nullptr), _vao(0), _vboVertices(0), _vboTextures(0),
-_vboNormals(0), _shaders(nullptr), _texture(0), _mixValue(0), _scale(1.0f),
- _translateX(0), _translateY(0), _translateZ(-3.0f), _colorTransitioning(false)
+_vboNormals(0), _shaders(nullptr), _textureId(0), _mixValue(0), _translateX(0),
+_translateY(0), _translateZ(-3.0f), _colorTransitioning(false)
 {
 	if (!glfwInit())
 		throw ERR_GLFW_INIT;
@@ -20,6 +17,7 @@ Engine::~Engine() {
 		glfwDestroyWindow(_window);
 	_clearShaders();
 	glfwTerminate();
+	glDeleteTextures(1, &_textureId);
 	delete _shaders;
 	delete _modelMatrix;
 	delete _viewMatrix;
@@ -60,14 +58,17 @@ void Engine::loadModel(Model *model) {
 	_vertices = model->getVertices();
 	_textures = model->getTextures();
 	_normals = model->getNormals();
+	_colors = model->getNormals();
 
-	if (!_normals.size()) {
-		for (unsigned int i = 0; i < _vertices.size(); i++) {
+	if (!_colors.size()) {
+		for (unsigned int i = 0; i < _vertices.size() / 2; i++) {
 			Normal normal;
 			normal.nx = i % 3 == 0 ? 1.0f : 0.0f;
 			normal.ny = i % 3 == 1 ? 1.0f : 0.0f;
 			normal.nz = i % 3 == 2 ? 1.0f : 0.0f;
-			_normals.push_back(normal);
+			_colors.push_back(normal);
+			_colors.push_back(normal);
+			_colors.push_back(normal);
 		}
 	}
 }
@@ -77,19 +78,21 @@ void Engine::loadShaders() {
 	_shaders->compile();
 }
 
-void Engine::loadTexture() {
+void Engine::loadTexture(const std::string &modelName) {
 	int width = 0;
 	int height = 0;
 	int nbrChannels = 0;
 	stbi_uc *textureData = nullptr;
+	const std::string workingDir = utils::getWorkingDirectory();
+	const std::string texturePath = workingDir + _getTexturePath(modelName);
 
 	stbi_set_flip_vertically_on_load(true);
-	textureData = stbi_load(_defaultTexturePath.c_str(), &width, &height, &nbrChannels, 0);
+	textureData = stbi_load(texturePath.c_str(), &width, &height, &nbrChannels, 0);
 	if (!textureData)
 		throw ERR_LOADING_TEXTURE;
 
-	glGenTextures(1, &_texture);
-	glBindTexture(GL_TEXTURE_2D, _texture);
+	glGenTextures(1, &_textureId);
+	glBindTexture(GL_TEXTURE_2D, _textureId);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -114,6 +117,7 @@ void Engine::render() {
 	glGenBuffers(1, &_vboVertices);
 	glGenBuffers(1, &_vboTextures);
 	glGenBuffers(1, &_vboNormals);
+	glGenBuffers(1, &_vboColors);
 
 	glBindVertexArray(_vao);
 
@@ -136,9 +140,15 @@ void Engine::render() {
 		glEnableVertexAttribArray(2);
 	}
 
+	if (_colors.size()) {
+		glBindBuffer(GL_ARRAY_BUFFER, _vboColors);
+		glBufferData(GL_ARRAY_BUFFER, _colors.size() * sizeof(Normal), &_colors[0], GL_STATIC_DRAW);
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Normal), 0);
+		glEnableVertexAttribArray(3);
+	}
+
 	glEnable(GL_DEPTH_TEST);
 
-	_modelMatrix->scale(_scale);
 	_projectionMatrix->perspective(FOV, static_cast<float>(WIN_WIDTH) / static_cast<float>(WIN_HEIGHT), 0.1f, 100.0f);
 
 	while (!glfwWindowShouldClose(_window)) {
@@ -154,7 +164,7 @@ void Engine::render() {
 		_updateShaders(currentTime);
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, _texture);
+		glBindTexture(GL_TEXTURE_2D, _textureId);
 		glBindVertexArray(_vao);
 		glDrawArrays(GL_TRIANGLES, 0, _vertices.size());
 		glBindVertexArray(0);
@@ -164,14 +174,26 @@ void Engine::render() {
 	}
 }
 
+const std::string Engine::_getTexturePath(const std::string &modelName) {
+	if (modelName.find("Boat") != std::string::npos) return TEXTURE_BOAT;
+	else if (modelName.find("Moon") != std::string::npos) return TEXTURE_MOON;
+	else if (modelName.find("MrCatPC") != std::string::npos) return TEXTURE_MRCATPC;
+	else if (modelName.find("Robot") != std::string::npos) return TEXTURE_ROBOT;
+	else if (modelName.find("Stall") != std::string::npos) return TEXTURE_STALL;
+	else if (modelName.find("TrafficCone") != std::string::npos) return TEXTURE_TRAFFICCONE;
+	else if (modelName.find("VoodooDoll") != std::string::npos) return TEXTURE_VOODOODOLL;
+	else if (modelName.find("WoodenLog") != std::string::npos) return TEXTURE_WOODENLOG;
+	else return TEXTURE_DEFAULT;
+}
+
 void Engine::_updateShaders(double currentTime) {
-	float *rotatedMatrix = _modelMatrix->rotate(0, static_cast<float>(currentTime), 0);
+	float *rotatedMatrix = _modelMatrix->rotate(0, -static_cast<float>(currentTime), 0);
 
 	_viewMatrix->translate(_translateX, _translateY, _translateZ);
 
 	_shaders->use();
 	_shaders->setFloat("mixValue", _mixValue);
-	_shaders->setInt("textureId", _texture);
+	_shaders->setInt("textureId", _textureId);
 	_shaders->setMat4("model", rotatedMatrix);
 	_shaders->setMat4("view", _viewMatrix->getMatrix());
 	_shaders->setMat4("projection", _projectionMatrix->getMatrix());
@@ -189,11 +211,7 @@ void Engine::_processInput(GLFWwindow *window, double deltaTime) {
 			_colorTransitioning = true;
 			_transitionTextureColor(deltaTime, true);
 		}
-	} else if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-		_modelMatrix->scale(_scale += SCALE_SPEED);
-	else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-		_modelMatrix->scale(_scale - SCALE_SPEED > 0 ? _scale -= SCALE_SPEED : _scale);
-	else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	} else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		_translateZ -= TRANSLATE_SPEED;
 	else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 		_translateZ += TRANSLATE_SPEED;
@@ -244,6 +262,7 @@ void Engine::_clearShaders() {
 	if (_vboVertices) glDeleteBuffers(1, &_vboVertices);
 	if (_vboTextures) glDeleteBuffers(1, &_vboTextures);
 	if (_vboNormals) glDeleteBuffers(1, &_vboNormals);
+	if (_vboColors) glDeleteBuffers(1, &_vboColors);
 }
 
 void Engine::_error_callback(int error, const char* description) {

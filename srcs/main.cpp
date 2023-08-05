@@ -25,7 +25,7 @@ int main(int ac, char **av) {
 		engine->initialize(model->getModelName());
 		engine->loadModel(model);
 		engine->loadShaders();
-		engine->loadTexture();
+		engine->loadTexture(model->getModelName());
 		engine->render();
 	} catch (std::exception &e) {
 		std::cerr << ERR << e.what() << std::endl;

@@ -20,16 +20,17 @@
 #define WIN_HEIGHT 480
 #define WIN_TITLE "Scop"
 
-#define TEXTURE_PATH "/resources/42/poney.jpg"
-// #define TEXTURE_PATH "/resources/stall.png"
-// #define TEXTURE_PATH "/resources/robot.png"
-// #define TEXTURE_PATH "/resources/monster.png"
-// #define TEXTURE_PATH "/resources/Cat_diffuse.jpg"
-// #define TEXTURE_PATH "/resources/HAND_C.jpg"
-// #define TEXTURE_PATH "/resources/Moon.png"
-// #define TEXTURE_PATH "/resources/Moon2.png"
+#define TEXTURE_DEFAULT "/resources/42/Poney.jpg"
+#define TEXTURE_BOAT "/resources/Boat/Boat.jpg"
+#define TEXTURE_MOON "/resources/Moon/Moon.png"
+#define TEXTURE_MRCATPC "/resources/MrCatPC/MrCatPC.png"
+#define TEXTURE_ROBOT "/resources/Robot/Robot.png"
+#define TEXTURE_STALL "/resources/Stall/Stall.png"
+#define TEXTURE_TRAFFICCONE "/resources/TrafficCone/TrafficCone.png"
+#define TEXTURE_VOODOODOLL "/resources/VoodooDoll/VoodooDoll.png"
+#define TEXTURE_WOODENLOG "/resources/WoodenLog/WoodenLog.jpg"
 
-#define BACKGROUND_COLOR 0.1f, 0.1f, 0.1f, 1.0f
+#define BACKGROUND_COLOR 0.133f, 0.133f, 0.133f, 1.0f
 #define FOV M_PI / 4
 
 #define TRANSLATE_SPEED 0.025
@@ -41,23 +42,24 @@ class Engine {
 		std::vector<Vertex> _vertices;
 		std::vector<Texture> _textures;
 		std::vector<Normal> _normals;
+		std::vector<Normal> _colors;
 		GLuint _vao;
 		GLuint _vboVertices;
 		GLuint _vboTextures;
 		GLuint _vboNormals;
+		GLuint _vboColors;
 		Shaders *_shaders;
 		Matrix *_modelMatrix;
 		Matrix *_viewMatrix;
 		Matrix *_projectionMatrix;
-		unsigned int _texture;
-		static const std::string _defaultTexturePath;
+		unsigned int _textureId;
 		float _mixValue;
-		float _scale;
 		float _translateX;
 		float _translateY;
 		float _translateZ;
 		bool _colorTransitioning;
 
+		const std::string _getTexturePath(const std::string &modelName);
 		static void _error_callback(int error, const char* description);
 		static void _framebuffer_size_callback(GLFWwindow *window, int width, int height);
 		void _processInput(GLFWwindow *window, double deltaTime);
@@ -72,7 +74,7 @@ class Engine {
 		void initialize(const std::string &modelName);
 		void loadModel(Model *model);
 		void loadShaders();
-		void loadTexture();
+		void loadTexture(const std::string &modelName);
 		void render();
 };
 
