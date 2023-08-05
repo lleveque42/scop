@@ -1,5 +1,11 @@
 #include "scop.hpp"
 
+void info() {
+	std::cout << USAGE << std::endl;
+	std::cout << W_INFO << S_INFO << A_INFO << D_INFO << SHIFT_INFO << SPACE_INFO << T_INFO << std::endl;
+	std::cout << EXIT_INFO << std::endl;
+}
+
 void clear(	Model *model, Engine *engine) {
 	if (model) delete model;
 	if (engine) delete engine;
@@ -26,6 +32,7 @@ int main(int ac, char **av) {
 		engine->loadModel(model);
 		engine->loadShaders();
 		engine->loadTexture(model->getModelName());
+		info();
 		engine->render();
 	} catch (std::exception &e) {
 		std::cerr << ERR << e.what() << std::endl;
