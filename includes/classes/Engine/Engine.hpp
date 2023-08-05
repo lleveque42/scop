@@ -16,8 +16,8 @@
 #define ERR_CREATE_WIN std::invalid_argument("could not create window (OpenGL version may be too old).")
 #define ERR_LOADING_TEXTURE std::invalid_argument("could not load texture (file may be missing).")
 
-#define WIN_WIDTH 640
-#define WIN_HEIGHT 480
+#define WIN_WIDTH 800
+#define WIN_HEIGHT 800
 #define WIN_TITLE "Scop"
 
 #define TEXTURE_DEFAULT "/resources/42/Poney.jpg"
@@ -31,7 +31,9 @@
 #define TEXTURE_WOODENLOG "/resources/WoodenLog/WoodenLog.jpg"
 
 #define BACKGROUND_COLOR 0.133f, 0.133f, 0.133f, 1.0f
-#define FOV M_PI / 4
+#define FOV M_PI / 3
+#define CAMERA_NEAR 0.1f
+#define CAMERA_FAR 100.0f
 
 #define TRANSLATE_SPEED 0.025
 

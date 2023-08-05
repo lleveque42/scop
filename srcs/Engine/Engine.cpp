@@ -2,7 +2,7 @@
 
 Engine::Engine() : _window(nullptr), _vao(0), _vboVertices(0), _vboTextures(0),
 _vboNormals(0), _shaders(nullptr), _textureId(0), _mixValue(0), _translateX(0),
-_translateY(0), _translateZ(-3.0f), _colorTransitioning(false)
+_translateY(0), _translateZ(-2.0f), _colorTransitioning(false)
 {
 	if (!glfwInit())
 		throw ERR_GLFW_INIT;
@@ -149,7 +149,7 @@ void Engine::render() {
 
 	glEnable(GL_DEPTH_TEST);
 
-	_projectionMatrix->perspective(FOV, static_cast<float>(WIN_WIDTH) / static_cast<float>(WIN_HEIGHT), 0.1f, 100.0f);
+	_projectionMatrix->perspective(FOV, static_cast<float>(WIN_WIDTH) / static_cast<float>(WIN_HEIGHT), CAMERA_NEAR, CAMERA_FAR);
 
 	while (!glfwWindowShouldClose(_window)) {
 		currentTime = glfwGetTime();
@@ -206,22 +206,23 @@ void Engine::_processInput(GLFWwindow *window, double deltaTime) {
 		_transitionTextureColor(deltaTime, false);
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-	else if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
+	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
 		if (!_colorTransitioning) {
 			_colorTransitioning = true;
 			_transitionTextureColor(deltaTime, true);
 		}
-	} else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	}
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		_translateZ -= TRANSLATE_SPEED;
-	else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 		_translateZ += TRANSLATE_SPEED;
-	else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		_translateX -= TRANSLATE_SPEED;
-	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		_translateX += TRANSLATE_SPEED;
-	else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		_translateY -= TRANSLATE_SPEED;
-	else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
 		_translateY += TRANSLATE_SPEED;
 }
 
