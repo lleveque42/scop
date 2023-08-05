@@ -3,9 +3,6 @@
 #include <cmath>
 #include <iostream>
 
-#include "Vector2.hpp"
-#include "Vector3.hpp"
-
 class Matrix {
 	private:
 		float *_data;

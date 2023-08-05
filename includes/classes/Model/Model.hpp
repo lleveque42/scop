@@ -5,8 +5,6 @@
 #include <string>
 #include <algorithm>
 
-#include "Vector2.hpp"
-#include "Vector3.hpp"
 #include "structs.hpp"
 
 #define ERR_INVALID_DEFAULT "Default model not found.\nExiting..."
