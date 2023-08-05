@@ -19,8 +19,10 @@
 
 enum facesType {
 	NONE,
-	V,
-	VTN,
+	V3,
+	V4,
+	VTN3,
+	VTN4,
 	UNKNOWN
 };
 
