@@ -63,27 +63,14 @@ std::vector<Normal> Model::getNormals() const {
 
 facesType Model::_getFacesType(const std::string &line) {
 	unsigned int slashCount = std::count(line.begin(), line.end(), '/');
-	std::vector<std::string> splittedLine;
-
-	splittedLine = utils::split(line, ' ');
-	if (slashCount == 0) {
-		if (splittedLine.size() == 4)
-			return V3;
-		if (splittedLine.size() == 5)
-			return V4;
-		return UNKNOWN;
-	} else if (slashCount == 6) {
+	if (slashCount == 0)
+		return V;
+	else if (slashCount == 6) {
 		int count = 0;
 		for (unsigned int i = 0; i < line.length() - 2; ++i)
 			if (line[i] == '/' && line[i + 1] == '/')
 				++count;
-		return count ? UNKNOWN : VTN3;
-	}  else if (slashCount == 8) {
-		int count = 0;
-		for (unsigned int i = 0; i < line.length() - 2; ++i)
-			if (line[i] == '/' && line[i + 1] == '/')
-				++count;
-		return count ? UNKNOWN : VTN4;
+		return count ? UNKNOWN : VTN;
 	} else return UNKNOWN;
 }
 
@@ -108,7 +95,7 @@ void Model::_parseTextures(const std::string &line, unsigned int i) {
 	std::vector<std::string> splittedLine;
 
 	splittedLine = utils::split(line, ' ');
-	if (splittedLine.size() < 3)
+	if (splittedLine.size() != 3)
 		throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
 	try {
 		Texture texture;
@@ -141,82 +128,33 @@ void Model::_parseFaces(const std::string &line, unsigned int i) {
 	std::vector<std::string> splittedLine;
 	std::vector<std::string> slashLine;
 
-	splittedLine = utils::split(line, ' ');
-		// throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
-	switch (_facesType) {
-		case V3:
-			if (splittedLine.size() != 4)
+	if (_facesType == V) {
+		splittedLine = utils::split(line, ' ');
+		if (splittedLine.size() != 4)
+			throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
+		try {
+			_sortedVertices.push_back(_vertices.at(std::stoul(splittedLine[1]) - 1));
+			_sortedVertices.push_back(_vertices.at(std::stoul(splittedLine[2]) - 1));
+			_sortedVertices.push_back(_vertices.at(std::stoul(splittedLine[3]) - 1));
+		} catch(std::exception &e) {
+			throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
+		}
+	} else if (_facesType == VTN) {
+		splittedLine = utils::split(line, ' ');
+		if (splittedLine.size() != 4)
+			throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
+		for (unsigned int j = 1; j < splittedLine.size(); j++) {
+			slashLine = utils::split(splittedLine[j], '/');
+			if (slashLine.size() != 3)
 				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
 			try {
-
-				_sortedVertices.push_back(_vertices.at(std::stoul(splittedLine[1]) - 1));
-				_sortedVertices.push_back(_vertices.at(std::stoul(splittedLine[2]) - 1));
-				_sortedVertices.push_back(_vertices.at(std::stoul(splittedLine[3]) - 1));
+				_sortedVertices.push_back(_vertices.at(std::stoul(slashLine[0]) - 1));
+				_sortedTextures.push_back(_textures.at(std::stoul(slashLine[1]) - 1));
+				_sortedNormals.push_back(_normals.at(std::stoul(slashLine[2]) - 1));
 			} catch(std::exception &e) {
 				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
 			}
-			break;
-		case V4:
-			if (splittedLine.size() != 5)
-				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
-			try {
-				_sortedVertices.push_back(_vertices.at(std::stoul(splittedLine[1]) - 1));
-				_sortedVertices.push_back(_vertices.at(std::stoul(splittedLine[2]) - 1));
-				_sortedVertices.push_back(_vertices.at(std::stoul(splittedLine[3]) - 1));
-				_sortedVertices.push_back(_vertices.at(std::stoul(splittedLine[1]) - 1));
-				_sortedVertices.push_back(_vertices.at(std::stoul(splittedLine[3]) - 1));
-				_sortedVertices.push_back(_vertices.at(std::stoul(splittedLine[4]) - 1));
-			} catch(std::exception &e) {
-				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
-			}
-			break;
-		case VTN3:
-			if (splittedLine.size() != 4)
-				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
-			for (unsigned int j = 1; j < 4; j++) {
-				slashLine = utils::split(splittedLine[j], '/');
-				if (slashLine.size() != 3)
-					throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
-				try {
-					_sortedVertices.push_back(_vertices.at(std::stoul(slashLine[0]) - 1));
-					_sortedTextures.push_back(_textures.at(std::stoul(slashLine[1]) - 1));
-					_sortedNormals.push_back(_normals.at(std::stoul(slashLine[2]) - 1));
-				} catch(std::exception &e) {
-					throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
-				}
-			}
-			break;
-		case VTN4:
-			if (splittedLine.size() != 5)
-				throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
-			for (unsigned int j = 1; j < 4; j++) {
-				slashLine = utils::split(splittedLine[j], '/');
-				if (slashLine.size() != 3)
-					throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
-				try {
-					_sortedVertices.push_back(_vertices.at(std::stoul(slashLine[0]) - 1));
-					_sortedTextures.push_back(_textures.at(std::stoul(slashLine[1]) - 1));
-					_sortedNormals.push_back(_normals.at(std::stoul(slashLine[2]) - 1));
-				} catch(std::exception &e) {
-					throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
-				}
-			}
-			for (unsigned int j = 1; j < 5; j++) {
-				if (j == 2)
-					continue;
-				slashLine = utils::split(splittedLine[j], '/');
-				if (slashLine.size() != 3)
-					throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
-				try {
-					_sortedVertices.push_back(_vertices.at(std::stoul(slashLine[0]) - 1));
-					_sortedTextures.push_back(_textures.at(std::stoul(slashLine[1]) - 1));
-					_sortedNormals.push_back(_normals.at(std::stoul(slashLine[2]) - 1));
-				} catch(std::exception &e) {
-					throw ERR_INVALID_FILE(_modelPath, std::to_string(i));
-				}
-			}
-		default:
-			break;
+		}
 	}
 }
 
