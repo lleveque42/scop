@@ -10,6 +10,14 @@ No librairies are allowed to load the 3D object, nor to make the matrixes or to 
 
 As there can be a lot of parameters in a .obj file, my project only fits with the simplest ones (vertices, textures, normals and faces coordinates).
 
+---
+
+### Prerequisites :wrench:
+    
+    sudo apt install freeglut3-dev
+
+---
+
 ### Usage :desktop_computer:
 
 First:
@@ -21,6 +29,47 @@ Then:
     
     make
 
+<p align="center">
+    <img src="https://github.com/lleveque42/scop/blob/main/readme/42scopMake.gif">
+</p>
+
 And finally:
 
     ./scop <path_to_obj_file.obj>
+
+:warning: If no file.obj is provided, 42.obj will be used as default. :warning:
+
+<p align="center">
+    <img src="https://github.com/lleveque42/scop/blob/main/readme/42scopLaunch.gif">
+</p>
+
+You can now interact with the object with theses keys :
+- W: move object forward
+- S: move object backward
+- A: move object to the left
+- D: move object to the right
+- Left Shift: move object down
+- Space: move object up
+- T: change colors (colorful/gray/textured)
+
+---
+
+### Examples of use :nerd_face:
+
+#### Robot :robot: :
+
+<p align="center">
+    <img src="https://github.com/lleveque42/scop/blob/main/readme/42scopRobotFinal.gif">
+</p>
+
+#### MrCatPC (i don't know why a hand is missing) :cat2: :
+
+<p align="center">
+    <img src="https://github.com/lleveque42/scop/blob/main/readme/42scopMrCatPC.gif">
+</p>
+
+#### Traffic Cone :warning: :
+
+<p align="center">
+    <img src="https://github.com/lleveque42/scop/blob/main/readme/42scopTrafficCone.gif">
+</p>
